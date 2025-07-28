@@ -1,0 +1,1791 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flashcard Pro - Création et Affichage de Flashcards</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1e3a8a;
+            --primary-light: #3b82f6;
+            --secondary: #6366f1;
+            --accent: #f59e0b;
+            --text: #111827;
+            --text-light: #4b5563;
+            --gray: #374151;
+            --soft-gray: #f3f4f6;
+            --card-bg: #ffffff;
+            --gradient-start: #1e3a8a;
+            --gradient-end: #3b82f6;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--soft-gray);
+            color: var(--text);
+            line-height: 1.8;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Animation de particules pour le header */
+        #particles-js {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: 0;
+        }
+
+        .header-content {
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Section principale */
+        .main-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Animations */
+        .fade-in {
+            opacity: 0;
+            animation: fadeIn 1s ease forwards;
+        }
+
+        .fade-in-up {
+            opacity: 0;
+            transform: translateY(40px);
+            animation: fadeInUp 1s ease forwards;
+        }
+
+        .slide-in-left {
+            opacity: 0;
+            transform: translateX(-40px);
+            animation: slideInLeft 0.8s ease forwards;
+        }
+
+        .slide-in-right {
+            opacity: 0;
+            transform: translateX(40px);
+            animation: slideInRight 0.8s ease forwards;
+        }
+
+        /* Staggered animations for cards */
+        .staggered-fade-in > * {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        .staggered-fade-in > *:nth-child(1) { animation: fadeInUp 0.6s ease forwards 0.1s; }
+        .staggered-fade-in > *:nth-child(2) { animation: fadeInUp 0.6s ease forwards 0.2s; }
+        .staggered-fade-in > *:nth-child(3) { animation: fadeInUp 0.6s ease forwards 0.3s; }
+        .staggered-fade-in > *:nth-child(4) { animation: fadeInUp 0.6s ease forwards 0.4s; }
+        .staggered-fade-in > *:nth-child(5) { animation: fadeInUp 0.6s ease forwards 0.5s; }
+        .staggered-fade-in > *:nth-child(n+6) { animation: fadeInUp 0.6s ease forwards 0.6s; }
+
+        /* Keyframes */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(40px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideInLeft {
+            from { opacity: 0; transform: translateX(-40px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(40px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes pulseGlow {
+            0% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.6); }
+            70% { box-shadow: 0 0 0 10px rgba(99, 102, 241, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); }
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Header styles */
+        .header {
+            background-image: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            color: white;
+            padding: 3rem 1.5rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23ffffff' fill-opacity='0.1' fill-rule='evenodd'/%3E%3C/svg%3E");
+            opacity: 0.3;
+        }
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            background-color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .logo i {
+            font-size: 2.5rem;
+            color: var(--primary);
+        }
+
+        .header h1 {
+            font-size: 2.75rem;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+            font-family: 'Montserrat', sans-serif;
+            letter-spacing: 0.5px;
+        }
+
+        .header p {
+            font-size: 1.25rem;
+            max-width: 800px;
+            margin: 0 auto;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+
+        /* Cards and forms */
+        .card {
+            background: var(--card-bg);
+            border-radius: 1rem;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+            transition: all 0.4s ease;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+            transform: translateY(-5px);
+        }
+
+        .card-header {
+            padding: 1.5rem 2rem;
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            color: white;
+        }
+
+        .card-body {
+            padding: 2rem;
+        }
+
+        /* Form styling */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text);
+            font-size: 0.95rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+            line-height: 1.5;
+            color: var(--text);
+            background-color: #fff;
+            background-clip: padding-box;
+            border: 2px solid #e2e8f0;
+            border-radius: 0.5rem;
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+        }
+
+        .form-control:focus {
+            border-color: var(--secondary);
+            outline: 0;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25);
+        }
+
+        textarea.form-control {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-block;
+            font-weight: 600;
+            text-align: center;
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            line-height: 1.5;
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background-color: #e2e8f0;
+            color: var(--text);
+        }
+
+        .btn-secondary:hover {
+            background-color: #cbd5e1;
+        }
+
+        .btn-accent {
+            background: linear-gradient(135deg, var(--accent), #fb923c);
+            color: white;
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.25);
+        }
+
+        .btn-accent:hover {
+            box-shadow: 0 6px 16px rgba(245, 158, 11, 0.4);
+            transform: translateY(-2px);
+        }
+
+        /* Flashcards */
+        .flashcard-item {
+            perspective: 1000px;
+            position: relative;
+            height: 300px;
+            width: 100%;
+            cursor: pointer;
+        }
+
+        .flashcard-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.8s;
+            transform-style: preserve-3d;
+        }
+
+        .flashcard-item.flipped .flashcard-inner {
+            transform: rotateY(180deg);
+        }
+
+        .flashcard-front, .flashcard-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 1.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        .flashcard-front {
+            background: white;
+            color: var(--text);
+            border-left: 5px solid var(--primary);
+        }
+
+        .flashcard-back {
+            background: linear-gradient(135deg, var(--primary-light), var(--secondary));
+            color: white;
+            transform: rotateY(180deg);
+        }
+
+        .flashcard-question {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .flashcard-answer {
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+
+        .flip-indicator {
+            position: absolute;
+            bottom: 1rem;
+            right: 1rem;
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+
+         .delete-flashcard {
+            position: absolute;
+            top: 0.75rem;
+            left: 0.75rem;
+            background: #fee2e2;
+            color: #ef4444;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 10; /* Ensure it's above the card content */
+        }
+
+        .delete-flashcard:hover {
+            background: #fecaca;
+            transform: scale(1.1);
+        }
+
+
+        /* Utilities */
+        .section-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 1.5rem;
+            position: relative;
+            padding-bottom: 1rem;
+            display: inline-block;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 60px;
+            height: 4px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 2px;
+        }
+
+        /* Stats section */
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+        }
+
+        .stat-icon {
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text);
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        .stat-label {
+            font-size: 1rem;
+            color: var(--text-light);
+            margin-top: 0.5rem;
+        }
+
+        /* Categories chips */
+        .categories-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            margin-bottom: 2rem;
+        }
+
+        .category-chip {
+            padding: 0.5rem 1rem;
+            background-color: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 2rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .category-chip:hover, .category-chip.active {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
+        }
+
+        /* Circular progress */
+        .circular-progress {
+            position: relative;
+            width: 120px;
+            height: 120px;
+        }
+
+        .circular-progress svg {
+            width: 100%;
+            height: 100%;
+            transform: rotate(-90deg);
+        }
+
+        .circular-progress circle {
+            fill: none;
+            stroke-width: 10;
+            stroke-linecap: round;
+            stroke: #e2e8f0;
+        }
+
+        .circular-progress circle.progress {
+            stroke: url(#gradient);
+            stroke-dasharray: 283;
+            stroke-dashoffset: 283;
+            transition: stroke-dashoffset 1s ease;
+        }
+
+        .progress-value {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        /* QA option container */
+        .qa-option-container {
+            border: 2px solid #e2e8f0;
+            border-radius: 0.75rem;
+            padding: 1.25rem;
+            margin-bottom: 1.5rem;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .qa-option-container:hover {
+            border-color: var(--secondary);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
+        }
+
+        .remove-option {
+            position: absolute;
+            top: 0.75rem;
+            right: 0.75rem;
+            background: #fee2e2;
+            color: #ef4444;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .remove-option:hover {
+            background: #fecaca;
+            transform: scale(1.1);
+        }
+
+        /* Toast notification */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: white;
+            color: var(--text);
+            padding: 1rem 1.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            display: flex;
+            align-items: center;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .toast-icon {
+            margin-right: 0.75rem;
+            font-size: 1.25rem;
+        }
+
+        .toast-success {
+            border-left: 5px solid #10b981;
+        }
+
+        .toast-success .toast-icon {
+            color: #10b981;
+        }
+
+        .toast-error {
+            border-left: 5px solid #ef4444;
+        }
+
+        .toast-error .toast-icon {
+            color: #ef4444;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div id="particles-js"></div>
+        <div class="header-content">
+            <div class="logo fade-in">
+                <i class="fas fa-brain"></i>
+            </div>
+            <h1 class="fade-in">Flashcard Pro</h1>
+            <p class="fade-in">Créez et révisez avec des flashcards intelligentes</p>
+        </div>
+    </header>
+
+    <div class="main-container py-10">
+        <section class="mb-16 fade-in-up">
+            <div class="stats-container">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-layer-group"></i>
+                    </div>
+                    <div class="stat-value" id="flashcardCount">0</div>
+                    <div class="stat-label">Flashcards Créées</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-bookmark"></i>
+                    </div>
+                    <div class="stat-value">85%</div>
+                    <div class="stat-label">Taux de Mémorisation</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-graduation-cap"></i>
+                    </div>
+                    <div class="stat-value">8</div>
+                    <div class="stat-label">Catégories Disponibles</div>
+                </div>
+                <div class="stat-card">
+                    <div class="circular-progress">
+                        <svg>
+                            <circle cx="60" cy="60" r="45"></circle>
+                            <circle class="progress" cx="60" cy="60" r="45" style="stroke-dashoffset: 70.75;"></circle>
+                            <defs>
+                                <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                    <stop offset="0%" stop-color="#1e3a8a" />
+                                    <stop offset="100%" stop-color="#3b82f6" />
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                        <div class="progress-value">75%</div>
+                    </div>
+                    <div class="stat-label">Maîtrise Globale</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-16 slide-in-left">
+            <h2 class="section-title">Créer une Nouvelle Flashcard</h2>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="text-xl font-bold">Nouvelle Flashcard</h3>
+                </div>
+                <div class="card-body">
+                    <form id="flashcardForm">
+                        <div class="form-group">
+                            <label class="form-label" for="category">Catégorie</label>
+                            <select class="form-control" id="category" required>
+                                <option value="" disabled selected>Sélectionnez une catégorie</option>
+                                <option value="ia">Intelligence Artificielle</option>
+                                <option value="cyber">Cybersécurité</option>
+                                <option value="dev">Développement Web</option>
+                                <option value="data">Science des Données</option>
+                                <option value="ux">UX Design</option>
+                                <option value="marketing">Marketing Digital</option>
+                                <option value="business">Business</option>
+                                <option value="langues">Langues</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="flashcardTitle">Titre</label>
+                            <input type="text" class="form-control" id="flashcardTitle" placeholder="Entrez le titre de votre flashcard" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="question">Question</label>
+                            <textarea class="form-control" id="question" placeholder="Entrez votre question" rows="3" required></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="answer">Réponse</label>
+                            <textarea class="form-control" id="answer" placeholder="Entrez la réponse" rows="5" required></textarea>
+                        </div>
+
+                        <div class="form-group" id="optionsContainer">
+                            <label class="form-label">Options de Réponse (Quiz)</label>
+                            <p class="text-sm text-gray-600 mb-3">Ajoutez des options de réponse pour transformer votre flashcard en quiz.</p>
+
+                            <div class="qa-options-list" id="qaOptionsList"></div>
+
+                            <button type="button" id="addOptionBtn" class="btn btn-secondary mb-3">
+                                <i class="fas fa-plus mr-2"></i> Ajouter une option
+                            </button>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Difficulté</label>
+                            <div class="flex items-center space-x-4">
+                                <label class="inline-flex items-center cursor-pointer">
+                                    <input type="radio" name="difficulty" value="easy" class="sr-only" checked>
+                                    <span class="px-3 py-1 rounded-full bg-green-100 text-green-800 border-2 border-green-200 hover:bg-green-200 cursor-pointer">Facile</span>
+                                </label>
+                                <label class="inline-flex items-center cursor-pointer">
+                                    <input type="radio" name="difficulty" value="medium" class="sr-only">
+                                    <span class="px-3 py-1 rounded-full bg-yellow-100 text-yellow-800 border-2 border-yellow-200 hover:bg-yellow-200 cursor-pointer">Moyen</span>
+                                </label>
+                                <label class="inline-flex items-center cursor-pointer">
+                                    <input type="radio" name="difficulty" value="hard" class="sr-only">
+                                    <span class="px-3 py-1 rounded-full bg-red-100 text-red-800 border-2 border-red-200 hover:bg-red-200 cursor-pointer">Difficile</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-end">
+                            <button type="reset" class="btn btn-secondary mr-3">Réinitialiser</button>
+                            <button type="submit" class="btn btn-primary">Créer Flashcard</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-16 slide-in-right">
+            <h2 class="section-title">Mes Flashcards</h2>
+
+            <div class="categories-container mb-6" id="categoriesFilter">
+                <div class="category-chip active" data-category="all">Toutes</div>
+                <div class="category-chip" data-category="ia">IA</div>
+                <div class="category-chip" data-category="cyber">Cybersécurité</div>
+                <div class="category-chip" data-category="dev">Développement</div>
+                <div class="category-chip" data-category="data">Data Science</div>
+                <div class="category-chip" data-category="ux">UX Design</div>
+                <div class="category-chip" data-category="marketing">Marketing</div>
+                <div class="category-chip" data-category="business">Business</div>
+                <div class="category-chip" data-category="langues">Langues</div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 staggered-fade-in" id="flashcardsContainer">
+                </div>
+
+            <div id="emptyState" class="hidden text-center py-10">
+                <div class="text-7xl mb-4 text-gray-300">
+                    <i class="fas fa-layer-group"></i>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-600 mb-2">Aucune flashcard disponible</h3>
+                <p class="text-gray-500">Créez votre première flashcard pour commencer à apprendre</p>
+            </div>
+        </section>
+
+        <section class="mb-16 fade-in-up">
+            <h2 class="section-title">Quiz Rapide</h2>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-xl font-bold">Testez vos connaissances</h3>
+                        <div class="bg-white text-primary px-3 py-1 rounded-full text-sm font-bold"><span id="quizQuestionLimit">5</span> questions</div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div id="quizContainer">
+                        <div class="flex justify-between items-center mb-6">
+                            <p>Choisissez une catégorie pour lancer un quiz généré automatiquement à partir de vos flashcards</p>
+                        </div>
+                        <div class="flex flex-wrap gap-3 mb-6">
+                            <button class="btn btn-secondary quiz-category-btn" data-category="ia">Intelligence Artificielle</button>
+                            <button class="btn btn-secondary quiz-category-btn" data-category="cyber">Cybersécurité</button>
+                            <button class="btn btn-secondary quiz-category-btn" data-category="dev">Développement Web</button>
+                            <button class="btn btn-secondary quiz-category-btn" data-category="all">Toutes les catégories</button>
+                        </div>
+                         <div class="form-group">
+                            <label class="form-label" for="quizSize">Nombre de questions (max <span id="maxQuizQuestions">0</span>)</label>
+                            <input type="number" class="form-control" id="quizSize" value="5" min="1" max="10" required>
+                        </div>
+                        <button id="startQuizBtn" class="btn btn-accent w-full mt-4">
+                            <i class="fas fa-play mr-2"></i> Démarrer le Quiz
+                        </button>
+                    </div>
+
+                    <div id="quizInProgress" class="hidden">
+                        <div class="mb-6">
+                            <div class="flex justify-between">
+                                <span class="font-bold">Question <span id="currentQuestionNum">1</span>/<span id="totalQuestions">5</span></span>
+                                <span class="text-primary font-bold"><i class="fas fa-stopwatch mr-1"></i> <span id="timer">30</span>s</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
+                                <div class="bg-primary h-2 rounded-full" id="progressBar" style="width: 0%"></div>
+                            </div>
+                        </div>
+
+                        <div id="questionContainer" class="mb-6">
+                            <h3 class="text-xl font-bold mb-4" id="questionText"></h3>
+                            <div class="space-y-3" id="optionsList">
+                                </div>
+                        </div>
+
+                        <div class="flex justify-between">
+                            <button id="previousQuestionBtn" class="btn btn-secondary" disabled>
+                                <i class="fas fa-arrow-left mr-1"></i> Précédent
+                            </button>
+                            <button id="nextQuestionBtn" class="btn btn-primary">
+                                Suivant <i class="fas fa-arrow-right ml-1"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="quizResults" class="hidden">
+                        <h3 class="text-xl font-bold mb-4 text-center">Résultats du Quiz</h3>
+
+                        <div class="flex justify-center mb-6">
+                            <div class="circular-progress">
+                                <svg>
+                                    <circle cx="60" cy="60" r="45"></circle>
+                                    <circle class="progress" id="quizResultProgress" cx="60" cy="60" r="45" style="stroke-dashoffset: 0;"></circle>
+                                </svg>
+                                <div class="progress-value"><span id="quizScore">0</span>%</div>
+                            </div>
+                        </div>
+
+                        <div class="bg-gray-100 p-4 rounded-lg mb-6">
+                            <div class="flex justify-between">
+                                <span>Bonnes réponses:</span>
+                                <span class="font-bold text-green-600" id="correctAnswers">0/0</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>Temps total:</span>
+                                <span class="font-bold" id="totalTime">0 secondes</span>
+                            </div>
+                        </div>
+
+                        <div class="space-y-4 mb-6" id="questionReview">
+                            </div>
+
+                        <div class="flex justify-center">
+                            <button id="restartQuizBtn" class="btn btn-primary mr-3">
+                                <i class="fas fa-redo-alt mr-1"></i> Recommencer le Quiz
+                            </button>
+                            <button id="backToQuizMenuBtn" class="btn btn-secondary">
+                                <i class="fas fa-home mr-1"></i> Menu Principal
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <footer class="bg-gray-800 text-white py-10">
+        <div class="main-container">
+            <div class="flex flex-col md:flex-row justify-between">
+                <div class="mb-6 md:mb-0">
+                    <h3 class="text-xl font-bold mb-4">Flashcard Pro</h3>
+                    <p class="max-w-md text-gray-400">
+                        Rendre l'apprentissage plus intelligent, personnalisé et accessible à tous grâce aux flashcards intelligentes.
+                    </p>
+                </div>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-6">
+                    <div>
+                        <h4 class="font-semibold mb-3">À propos</h4>
+                        <ul class="space-y-2 text-gray-400">
+                            <li><a href="#" class="hover:text-white">Notre mission</a></li>
+                            <li><a href="#" class="hover:text-white">L'équipe</a></li>
+                            <li><a href="#" class="hover:text-white">Témoignages</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold mb-3">Ressources</h4>
+                        <ul class="space-y-2 text-gray-400">
+                            <li><a href="#" class="hover:text-white">Blog</a></li>
+                            <li><a href="#" class="hover:text-white">Tutoriels</a></li>
+                            <li><a href="#" class="hover:text-white">FAQ</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold mb-3">Nous contacter</h4>
+                        <ul class="space-y-2 text-gray-400">
+                            <li><a href="#" class="hover:text-white">Support</a></li>
+                            <li><a href="#" class="hover:text-white">Contact</a></li>
+                        </ul>
+                        <div class="flex mt-4 space-x-3">
+                            <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-facebook-f"></i></a>
+                            <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-twitter"></i></a>
+                            <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-instagram"></i></a>
+                            <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-linkedin-in"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
+                <p>&copy; 2025 Flashcard Pro – Tous droits réservés</p>
+            </div>
+        </div>
+    </footer>
+
+    <div id="toast" class="toast">
+        <div class="toast-icon"><i class="fas fa-check-circle"></i></div>
+        <div class="toast-content">Flashcard créée avec succès!</div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize particles.js
+            particlesJS('particles-js', {
+                "particles": {
+                    "number": {
+                        "value": 80,
+                        "density": {
+                            "enable": true,
+                            "value_area": 800
+                        }
+                    },
+                    "color": {
+                        "value": "#ffffff"
+                    },
+                    "shape": {
+                        "type": "circle",
+                        "stroke": {
+                            "width": 0,
+                            "color": "#000000"
+                        },
+                        "polygon": {
+                            "nb_sides": 5
+                        },
+                    },
+                    "opacity": {
+                        "value": 0.5,
+                        "random": false,
+                        "anim": {
+                            "enable": false,
+                            "speed": 1,
+                            "opacity_min": 0.1,
+                            "sync": false
+                        }
+                    },
+                    "size": {
+                        "value": 3,
+                        "random": true,
+                        "anim": {
+                            "enable": false,
+                            "speed": 40,
+                            "size_min": 0.1,
+                            "sync": false
+                        }
+                    },
+                    "line_linked": {
+                        "enable": true,
+                        "distance": 150,
+                        "color": "#ffffff",
+                        "opacity": 0.4,
+                        "width": 1
+                    },
+                    "move": {
+                        "enable": true,
+                        "speed": 2,
+                        "direction": "none",
+                        "random": false,
+                        "straight": false,
+                        "out_mode": "out",
+                        "bounce": false,
+                        "attract": {
+                            "enable": false,
+                            "rotateX": 600,
+                            "rotateY": 1200
+                        }
+                    }
+                },
+                "interactivity": {
+                    "detect_on": "canvas",
+                    "events": {
+                        "onhover": {
+                            "enable": true,
+                            "mode": "grab"
+                        },
+                        "onclick": {
+                            "enable": true,
+                            "mode": "push"
+                        },
+                        "resize": true
+                    },
+                    "modes": {
+                        "grab": {
+                            "distance": 140,
+                            "line_linked": {
+                                "opacity": 1
+                            }
+                        },
+                        "bubble": {
+                            "distance": 400,
+                            "size": 40,
+                            "duration": 2,
+                            "opacity": 8,
+                            "speed": 3
+                        },
+                        "repulse": {
+                            "distance": 200,
+                            "duration": 0.4
+                        },
+                        "push": {
+                            "particles_nb": 4
+                        },
+                        "remove": {
+                            "particles_nb": 2
+                        }
+                    }
+                },
+                "retina_detect": true
+            });
+
+            // Initialize variables
+            let flashcards = []; // Array to store all flashcards
+            const flashcardsContainer = document.getElementById('flashcardsContainer');
+            const flashcardCountElement = document.getElementById('flashcardCount');
+            const emptyStateElement = document.getElementById('emptyState');
+
+            // Sample flashcards (will be added to the main array on load)
+            const sampleFlashcards = [
+                 {
+                    id: 1,
+                    category: "ia",
+                    title: "Deep Learning",
+                    question: "Qu'est-ce que le Deep Learning?",
+                    answer: "Le Deep Learning est un sous-domaine du machine learning qui utilise des réseaux de neurones artificiels avec plusieurs couches (d'où le terme \"profond\"). Il permet aux systèmes d'apprendre à partir de grandes quantités de données et de détecter des motifs complexes.",
+                    difficulty: "easy",
+                    options: [
+                        { text: "Une technique d'optimisation des bases de données", isCorrect: false },
+                        { text: "Un sous-domaine du machine learning utilisant des réseaux de neurones profonds", isCorrect: true },
+                        { text: "Un système d'exploitation pour serveurs", isCorrect: false },
+                        { text: "Un langage de programmation spécialisé", isCorrect: false }
+                    ],
+                    dateCreated: new Date().toISOString()
+                },
+                {
+                    id: 2,
+                    category: "cyber",
+                    title: "Attaque DDoS",
+                    question: "Qu'est-ce qu'une attaque par déni de service (DDoS)?",
+                    answer: "Une attaque DDoS (Distributed Denial of Service) est une tentative malveillante de perturber le trafic normal d'un serveur, d'un service ou d'un réseau en l'inondant de trafic Internet provenant de multiples sources. Cela surcharge les ressources, rendant le service indisponible pour les utilisateurs légitimes.",
+                    difficulty: "medium",
+                     options: [
+                        { text: "Un test de performance réseau", isCorrect: false },
+                        { text: "Un virus qui chiffre les données", isCorrect: false },
+                        { text: "Une tentative d'inonder un service de trafic pour le rendre indisponible", isCorrect: true },
+                        { text: "Une faille dans un logiciel permettant l'accès non autorisé", isCorrect: false }
+                    ],
+                    dateCreated: new Date().toISOString()
+                }
+            ];
+
+            // Add sample flashcards to the main array and display them
+            sampleFlashcards.forEach(card => {
+                flashcards.push(card);
+                const flashcardElement = createFlashcardElement(card);
+                flashcardsContainer.appendChild(flashcardElement);
+            });
+
+            updateFlashcardCount();
+            updateEmptyState();
+            updateMaxQuizQuestions(); // Update max questions for quiz input
+
+            // Function to update flashcard count
+            function updateFlashcardCount() {
+                flashcardCountElement.textContent = flashcards.length;
+            }
+
+            // Function to update empty state message visibility
+            function updateEmptyState() {
+                if (flashcards.length === 0) {
+                    emptyStateElement.classList.remove('hidden');
+                } else {
+                    emptyStateElement.classList.add('hidden');
+                }
+            }
+
+             // Function to update max quiz questions input
+            function updateMaxQuizQuestions() {
+                const maxQuestions = flashcards.length;
+                const quizSizeInput = document.getElementById('quizSize');
+                const maxQuizQuestionsSpan = document.getElementById('maxQuizQuestions');
+
+                maxQuizQuestionsSpan.textContent = maxQuestions;
+                quizSizeInput.max = maxQuestions;
+
+                // Adjust current value if it exceeds the new max
+                if (parseInt(quizSizeInput.value) > maxQuestions) {
+                    quizSizeInput.value = maxQuestions;
+                     document.getElementById('quizQuestionLimit').textContent = maxQuestions;
+                } else {
+                     document.getElementById('quizQuestionLimit').textContent = quizSizeInput.value;
+                }
+                 // Disable start quiz button if no flashcards are available
+                const startQuizBtn = document.getElementById('startQuizBtn');
+                if (flashcards.length === 0) {
+                    startQuizBtn.setAttribute('disabled', true);
+                    startQuizBtn.textContent = 'Aucune flashcard pour le quiz';
+                } else {
+                     startQuizBtn.removeAttribute('disabled');
+                     startQuizBtn.innerHTML = '<i class="fas fa-play mr-2"></i> Démarrer le Quiz';
+                }
+            }
+
+            // Flashcard creation form
+            const flashcardForm = document.getElementById('flashcardForm');
+            const addOptionBtn = document.getElementById('addOptionBtn');
+            const qaOptionsList = document.getElementById('qaOptionsList');
+
+            addOptionBtn.addEventListener('click', function() {
+                addOptionField();
+            });
+
+            function addOptionField() {
+                const optionContainer = document.createElement('div');
+                optionContainer.classList.add('qa-option-container');
+
+                const optionField = document.createElement('div');
+                optionField.classList.add('mb-3');
+
+                const optionLabel = document.createElement('label');
+                optionLabel.classList.add('form-label');
+                optionLabel.textContent = 'Option de réponse';
+
+                const optionInput = document.createElement('input');
+                optionInput.type = 'text';
+                optionInput.classList.add('form-control');
+                optionInput.placeholder = 'Saisissez une option de réponse';
+
+                const correctCheckbox = document.createElement('div');
+                correctCheckbox.classList.add('mt-2');
+                correctCheckbox.innerHTML = `
+                    <label class="inline-flex items-center cursor-pointer">
+                        <input type="checkbox" class="sr-only correct-option">
+                        <span class="relative w-10 h-5 transition-colors duration-200 ease-in-out bg-gray-200 rounded-full cursor-pointer">
+                            <span class="absolute inset-0 flex items-center justify-center w-6 h-6 transition-transform duration-200 ease-in-out transform bg-white rounded-full shadow-md correct-option-toggle"></span>
+                        </span>
+                        <span class="ml-3 text-sm font-medium text-gray-700">Réponse correcte</span>
+                    </label>
+                `;
+
+                const removeBtn = document.createElement('div');
+                removeBtn.classList.add('remove-option');
+                removeBtn.innerHTML = '<i class="fas fa-times"></i>';
+                removeBtn.addEventListener('click', function() {
+                    qaOptionsList.removeChild(optionContainer);
+                });
+
+                optionField.appendChild(optionLabel);
+                optionField.appendChild(optionInput);
+                optionContainer.appendChild(optionField);
+                optionContainer.appendChild(correctCheckbox);
+                optionContainer.appendChild(removeBtn);
+
+                qaOptionsList.appendChild(optionContainer);
+
+                // Toggle functionality for correct option
+                const checkbox = correctCheckbox.querySelector('input.correct-option');
+                const toggle = correctCheckbox.querySelector('.correct-option-toggle');
+
+                checkbox.addEventListener('change', function() {
+                    if (this.checked) {
+                        toggle.classList.add('translate-x-5', 'bg-green-500');
+                        toggle.classList.remove('bg-white');
+
+                        // Uncheck other options
+                        const allCheckboxes = qaOptionsList.querySelectorAll('input.correct-option');
+                        allCheckboxes.forEach(cb => {
+                            if (cb !== checkbox) {
+                                cb.checked = false;
+                                const otherToggle = cb.parentNode.querySelector('.correct-option-toggle');
+                                otherToggle.classList.remove('translate-x-5', 'bg-green-500');
+                                otherToggle.classList.add('bg-white');
+                            }
+                        });
+                    } else {
+                        toggle.classList.remove('translate-x-5', 'bg-green-500');
+                        toggle.classList.add('bg-white');
+                    }
+                });
+
+                toggle.parentNode.addEventListener('click', function(e) {
+                     // Prevent the default behavior of the label clicking the checkbox directly
+                    e.preventDefault();
+                     // Manually trigger the checkbox change
+                    checkbox.checked = !checkbox.checked;
+                    checkbox.dispatchEvent(new Event('change'));
+                });
+            }
+
+            // Form submission
+            flashcardForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                // Get form values
+                const category = document.getElementById('category').value;
+                const title = document.getElementById('flashcardTitle').value;
+                const question = document.getElementById('question').value;
+                const answer = document.getElementById('answer').value;
+                const difficulty = document.querySelector('input[name="difficulty"]:checked').value;
+
+                // Get options if any
+                const options = [];
+                const optionContainers = qaOptionsList.querySelectorAll('.qa-option-container');
+                let hasCorrectOption = false;
+
+                optionContainers.forEach(container => {
+                    const optionText = container.querySelector('input[type="text"]').value;
+                    const isCorrect = container.querySelector('input.correct-option').checked;
+
+                    if (isCorrect) hasCorrectOption = true;
+
+                    options.push({
+                        text: optionText,
+                        isCorrect: isCorrect
+                    });
+                });
+
+                // Validate that if options are added, at least one is marked as correct
+                 if (options.length > 0 && !hasCorrectOption) {
+                    showToast('error', 'Veuillez marquer au moins une option comme correcte.');
+                    return; // Stop submission
+                }
+
+                // Create flashcard object
+                const newFlashcard = {
+                    id: Date.now(), // Unique ID based on timestamp
+                    category: category,
+                    title: title,
+                    question: question,
+                    answer: answer,
+                    difficulty: difficulty,
+                    options: options, // Store options array
+                    dateCreated: new Date().toISOString()
+                };
+
+                // Add flashcard to array
+                flashcards.push(newFlashcard);
+
+                // Create and add flashcard to DOM
+                const flashcardElement = createFlashcardElement(newFlashcard);
+                flashcardsContainer.appendChild(flashcardElement);
+
+                // Update counts and states
+                updateFlashcardCount();
+                updateEmptyState();
+                updateMaxQuizQuestions();
+
+                // Show success message
+                showToast('success', 'Flashcard créée avec succès!');
+
+                // Reset form
+                resetForm();
+            });
+
+            // Function to create flashcard element
+            function createFlashcardElement(flashcard) {
+                const flashcardItem = document.createElement('div');
+                flashcardItem.classList.add('flashcard-item');
+                flashcardItem.dataset.id = flashcard.id; // Store the flashcard ID on the element
+                flashcardItem.dataset.category = flashcard.category;
+
+                // Apply difficulty indicator
+                let difficultyColor;
+                switch(flashcard.difficulty) {
+                    case 'easy':
+                        difficultyColor = 'border-green-500';
+                        break;
+                    case 'medium':
+                        difficultyColor = 'border-yellow-500';
+                        break;
+                    case 'hard':
+                        difficultyColor = 'border-red-500';
+                        break;
+                     default:
+                        difficultyColor = 'border-gray-300'; // Default color
+                }
+
+                flashcardItem.innerHTML = `
+                    <div class="flashcard-inner">
+                        <div class="flashcard-front ${difficultyColor}">
+                             <div class="delete-flashcard" data-id="${flashcard.id}">
+                                <i class="fas fa-trash-alt"></i>
+                            </div>
+                            <h3 class="flashcard-question">${flashcard.question}</h3>
+                            <p class="flip-indicator">Cliquez pour voir la réponse <i class="fas fa-redo-alt"></i></p>
+                        </div>
+                        <div class="flashcard-back">
+                            <p class="flashcard-answer">${flashcard.answer}</p>
+                        </div>
+                    </div>
+                `;
+
+                // Add click event to flip the card
+                flashcardItem.addEventListener('click', function(event) {
+                     // Prevent flipping if the delete button was clicked
+                     if (!event.target.closest('.delete-flashcard')) {
+                        this.classList.toggle('flipped');
+                     }
+                });
+
+                 // Add event listener for the delete button
+                 const deleteButton = flashcardItem.querySelector('.delete-flashcard');
+                 deleteButton.addEventListener('click', function() {
+                     const flashcardId = parseInt(this.dataset.id);
+                     deleteFlashcard(flashcardId);
+                 });
+
+
+                return flashcardItem;
+            }
+
+            // Function to delete a flashcard
+            function deleteFlashcard(id) {
+                 // Find the index of the flashcard in the array
+                 const index = flashcards.findIndex(card => card.id === id);
+
+                 if (index !== -1) {
+                     // Remove the flashcard from the array
+                     flashcards.splice(index, 1);
+
+                     // Remove the flashcard element from the DOM
+                     const flashcardElement = document.querySelector(`.flashcard-item[data-id="${id}"]`);
+                     if (flashcardElement) {
+                         flashcardElement.remove();
+                     }
+
+                     // Update counts and states
+                     updateFlashcardCount();
+                     updateEmptyState();
+                     updateMaxQuizQuestions();
+
+                     showToast('success', 'Flashcard supprimée avec succès!');
+                 }
+            }
+
+
+            // Reset form function
+            function resetForm() {
+                flashcardForm.reset();
+                qaOptionsList.innerHTML = ''; // Clear dynamic options
+                 // Reset difficulty radio button to default (easy)
+                document.querySelector('input[name="difficulty"][value="easy"]').checked = true;
+            }
+
+            // Show toast message
+            function showToast(type, message) {
+                const toast = document.getElementById('toast');
+                const toastIcon = toast.querySelector('.toast-icon i');
+                const toastContent = toast.querySelector('.toast-content');
+
+                // Set appropriate icon and style
+                if (type === 'success') {
+                    toast.className = 'toast toast-success show';
+                    toastIcon.className = 'fas fa-check-circle';
+                } else {
+                    toast.className = 'toast toast-error show';
+                    toastIcon.className = 'fas fa-exclamation-circle';
+                }
+
+                toastContent.textContent = message;
+
+                // Show the toast
+                setTimeout(() => {
+                    toast.classList.add('show');
+                }, 100);
+
+                // Hide the toast after 3 seconds
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                }, 3000);
+            }
+
+            // Category filter for displayed flashcards
+            const categoryChips = document.querySelectorAll('.category-chip');
+            categoryChips.forEach(chip => {
+                chip.addEventListener('click', function() {
+                    // Update active state
+                    categoryChips.forEach(c => c.classList.remove('active'));
+                    this.classList.add('active');
+
+                    // Filter flashcards
+                    const selectedCategory = this.dataset.category;
+                    filterFlashcards(selectedCategory);
+                });
+            });
+
+            function filterFlashcards(category) {
+                const flashcardItems = document.querySelectorAll('.flashcard-item');
+                flashcardItems.forEach(item => {
+                    if (category === 'all' || item.dataset.category === category) {
+                        item.style.display = 'block';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            }
+
+            // Quiz functionality
+            let selectedQuizCategory = 'all';
+            let quizQuestions = [];
+            let currentQuestionIndex = 0; // Renamed for clarity
+            let quizScore = 0;
+            let quizStartTime = 0;
+            let quizTimerInterval = null;
+            let timeRemaining = 30; // Time per question
+
+            // Select quiz category
+            const quizCategoryBtns = document.querySelectorAll('.quiz-category-btn');
+            quizCategoryBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    quizCategoryBtns.forEach(b => b.classList.remove('btn-primary'));
+                    this.classList.remove('btn-secondary');
+                    this.classList.add('btn-primary');
+                    selectedQuizCategory = this.dataset.category;
+                });
+            });
+
+            // Update quiz size input display
+            document.getElementById('quizSize').addEventListener('input', function() {
+                 document.getElementById('quizQuestionLimit').textContent = this.value;
+            });
+
+            // Start quiz
+            const startQuizBtn = document.getElementById('startQuizBtn');
+            startQuizBtn.addEventListener('click', function() {
+                 const quizSize = parseInt(document.getElementById('quizSize').value);
+                 if (isNaN(quizSize) || quizSize <= 0) {
+                     showToast('error', 'Veuillez entrer un nombre valide de questions.');
+                     return;
+                 }
+                // Generate questions from flashcards
+                generateQuiz(quizSize);
+
+                 if (quizQuestions.length === 0) {
+                     showToast('error', 'Aucune flashcard disponible pour cette catégorie.');
+                     return;
+                 }
+
+                // Show quiz in progress
+                document.getElementById('quizContainer').classList.add('hidden');
+                document.getElementById('quizInProgress').classList.remove('hidden');
+                document.getElementById('quizResults').classList.add('hidden'); // Hide results if visible
+
+                // Start the timer for the first question
+                startTimer();
+
+                // Load the first question
+                loadQuestion(0);
+            });
+
+            function generateQuiz(size) {
+                // Filter flashcards by selected category
+                let availableFlashcards = [];
+                if (selectedQuizCategory === 'all') {
+                    availableFlashcards = [...flashcards];
+                } else {
+                    availableFlashcards = flashcards.filter(f => f.category === selectedQuizCategory);
+                }
+
+                 // Filter out flashcards without options if we need quiz questions with options
+                 // For this implementation, we'll include all flashcards and generate options if needed
+                 // If you only want quiz questions from flashcards with options, uncomment the line below:
+                 // availableFlashcards = availableFlashcards.filter(f => f.options && f.options.length > 0);
+
+
+                // Shuffle available flashcards
+                const shuffled = availableFlashcards.sort(() => 0.5 - Math.random());
+
+                // Select the requested number of questions
+                quizQuestions = shuffled.slice(0, size);
+
+                 // Ensure each quiz question has at least 4 options (generate if missing)
+                 quizQuestions.forEach(q => {
+                     if (!q.options || q.options.length < 4) {
+                         q.options = generateOptions(q.answer, q.options || []); // Generate options, keeping existing ones
+                     } else {
+                         // Shuffle existing options to avoid correct answer always being in the same position
+                         q.options.sort(() => 0.5 - Math.random());
+                     }
+                 });
+
+
+                // Update total questions count in the UI
+                document.getElementById('totalQuestions').textContent = quizQuestions.length;
+
+                // Reset quiz state
+                currentQuestionIndex = 0;
+                quizScore = 0;
+                quizStartTime = Date.now();
+            }
+
+             // Function to generate dummy options if a flashcard doesn't have them
+            function generateOptions(correctAnswer, existingOptions = []) {
+                const generated = [...existingOptions]; // Start with any existing options
+                const incorrectOptions = [
+                    "Ceci est une option incorrecte générée 1",
+                    "Ceci est une option incorrecte générée 2",
+                    "Ceci est une option incorrecte générée 3",
+                    "Ceci est une option incorrecte générée 4",
+                    "Ceci est une option incorrecte générée 5"
+                ];
+
+                // Ensure the correct answer is in the options
+                if (!generated.some(opt => opt.text === correctAnswer && opt.isCorrect)) {
+                     // Remove correct answer from incorrect options pool if it exists there
+                     const filteredIncorrect = incorrectOptions.filter(opt => opt !== correctAnswer);
+                    generated.push({ text: correctAnswer, isCorrect: true });
+                     // Add some filtered incorrect options
+                     while (generated.length < 4 && filteredIncorrect.length > 0) {
+                         const randomIndex = Math.floor(Math.random() * filteredIncorrect.length);
+                         generated.push({ text: filteredIncorrect.splice(randomIndex, 1)[0], isCorrect: false });
+                     }
+                }
+
+                 // Add more incorrect options if needed to reach at least 4
+                 while (generated.length < 4 && incorrectOptions.length > 0) {
+                      const randomIndex = Math.floor(Math.random() * incorrectOptions.length);
+                      // Ensure we don't add the correct answer again if it was already added
+                      if (!generated.some(opt => opt.text === incorrectOptions[randomIndex])) {
+                           generated.push({ text: incorrectOptions.splice(randomIndex, 1)[0], isCorrect: false });
+                      } else {
+                          incorrectOptions.splice(randomIndex, 1); // Remove if it's a duplicate
+                      }
+                 }
+
+
+                // Shuffle the final options
+                generated.sort(() => 0.5 - Math.random());
+
+                return generated;
+            }
+
+
+            function loadQuestion(index) {
+                if (index >= 0 && index < quizQuestions.length) {
+                    currentQuestionIndex = index; // Update current question index
+                    const question = quizQuestions[currentQuestionIndex];
+                    const questionTextElement = document.getElementById('questionText');
+                    const optionsListElement = document.getElementById('optionsList');
+
+                    // Update question number
+                    document.getElementById('currentQuestionNum').textContent = currentQuestionIndex + 1;
+
+                    // Update progress bar
+                    const progressPercent = ((currentQuestionIndex + 1) / quizQuestions.length) * 100;
+                    document.getElementById('progressBar').style.width = `${progressPercent}%`;
+
+                    // Update question text
+                    questionTextElement.textContent = question.question;
+
+                    // Clear existing options
+                    optionsListElement.innerHTML = '';
+
+                    // Add options
+                    question.options.forEach((option, i) => {
+                        const optionElement = document.createElement('div');
+                        optionElement.classList.add('mb-2', 'option-item');
+
+                        // Check if this option was the user's previous answer
+                        const isPreviouslyAnswered = question.hasOwnProperty('userAnswer') && question.userAnswer === i;
+
+                        optionElement.innerHTML = `
+                            <label class="flex items-center p-3 border rounded-lg cursor-pointer transition-colors hover:bg-gray-50 option-label">
+                                <input type="radio" name="question${currentQuestionIndex}" value="${i}" class="mr-3" ${isPreviouslyAnswered ? 'checked' : ''}>
+                                <span>${option.text}</span>
+                            </label>
+                        `;
+
+                        // Add event listener to update user's answer
+                        optionElement.querySelector('input').addEventListener('change', function() {
+                            quizQuestions[currentQuestionIndex].userAnswer = i;
+
+                            // Enable next button once an answer is selected
+                            document.getElementById('nextQuestionBtn').removeAttribute('disabled');
+                        });
+
+                        optionsListElement.appendChild(optionElement);
+                    });
+
+                    // Update button states
+                    document.getElementById('previousQuestionBtn').disabled = (currentQuestionIndex === 0);
+
+                    const nextBtn = document.getElementById('nextQuestionBtn');
+                    // Remove previous event listener to avoid multiple bindings
+                    nextBtn.removeEventListener('click', handleNextButtonClick);
+
+                    if (currentQuestionIndex === quizQuestions.length - 1) {
+                        nextBtn.textContent = 'Terminer le Quiz';
+                        nextBtn.innerHTML = 'Terminer le Quiz <i class="fas fa-check ml-1"></i>'; // Add check icon
+                        nextBtn.addEventListener('click', finishQuiz, { once: true }); // Ensure it only runs once
+                    } else {
+                        nextBtn.textContent = 'Suivant';
+                        nextBtn.innerHTML = 'Suivant <i class="fas fa-arrow-right ml-1"></i>';
+                        nextBtn.addEventListener('click', handleNextButtonClick);
+                    }
+
+                    // Disable next button if no answer selected yet for the current question
+                    if (!quizQuestions[currentQuestionIndex].hasOwnProperty('userAnswer')) {
+                        document.getElementById('nextQuestionBtn').setAttribute('disabled', true);
+                    } else {
+                         // If an answer was previously selected, enable the next button
+                         document.getElementById('nextQuestionBtn').removeAttribute('disabled');
+                    }
+
+
+                    // Reset timer for this question
+                    resetTimer();
+                }
+            }
+
+            // Handler for the "Next" button click
+            function handleNextButtonClick() {
+                 // Check if an answer is selected before moving to the next question
+                 if (quizQuestions[currentQuestionIndex].hasOwnProperty('userAnswer')) {
+                     currentQuestionIndex++;
+                     loadQuestion(currentQuestionIndex);
+                 } else {
+                     // Optionally, show a message asking the user to select an answer
+                     showToast('error', 'Veuillez sélectionner une option avant de continuer.');
+                 }
+            }
+
+
+            document.getElementById('previousQuestionBtn').addEventListener('click', function() {
+                if (currentQuestionIndex > 0) {
+                    currentQuestionIndex--;
+                    loadQuestion(currentQuestionIndex);
+                }
+            });
+
+            function finishQuiz() {
+                // Stop timer
+                clearInterval(quizTimerInterval);
+
+                // Calculate score
+                let correctCount = 0;
+                quizQuestions.forEach(q => {
+                    // Check if userAnswer exists and if the selected option is correct
+                    if (q.hasOwnProperty('userAnswer') && q.options[q.userAnswer] && q.options[q.userAnswer].isCorrect) {
+                        correctCount++;
+                    }
+                });
+
+                quizScore = Math.round((correctCount / quizQuestions.length) * 100);
+
+                // Calculate time taken
+                const quizEndTime = Date.now();
+                const timeTaken = Math.round((quizEndTime - quizStartTime) / 1000);
+
+                // Hide quiz in progress
+                document.getElementById('quizInProgress').classList.add('hidden');
+
+                // Show results
+                document.getElementById('quizResults').classList.remove('hidden');
+                document.getElementById('quizScore').textContent = quizScore;
+                document.getElementById('correctAnswers').textContent = `${correctCount}/${quizQuestions.length}`;
+                document.getElementById('totalTime').textContent = `${timeTaken} secondes`;
+
+                // Set progress circle
+                const progressCircle = document.getElementById('quizResultProgress');
+                const dashoffset = 283 - (283 * quizScore / 100);
+                progressCircle.style.strokeDashoffset = dashoffset;
+                 // Change stroke color based on score
+                 if (quizScore >= 80) {
+                     progressCircle.style.stroke = '#10b981'; // Green
+                 } else if (quizScore >= 50) {
+                     progressCircle.style.stroke = '#f59e0b'; // Yellow
+                 } else {
+                     progressCircle.style.stroke = '#ef4444'; // Red
+                 }
+
+
+                // Generate question review
+                const questionReview = document.getElementById('questionReview');
+                questionReview.innerHTML = '';
+
+                quizQuestions.forEach((q, i) => {
+                    const reviewItem = document.createElement('div');
+                    reviewItem.classList.add('p-4', 'rounded-lg');
+
+                    const isCorrect = q.hasOwnProperty('userAnswer') && q.options[q.userAnswer] && q.options[q.userAnswer].isCorrect;
+                    reviewItem.classList.add(isCorrect ? 'bg-green-50' : 'bg-red-50');
+
+                    let userAnswerText = 'Non répondu';
+                    if (q.hasOwnProperty('userAnswer') && q.options[q.userAnswer]) {
+                        userAnswerText = q.options[q.userAnswer].text;
+                    }
+
+                    // Find correct answer
+                    let correctAnswerText = 'Non disponible';
+                    const correctAnswerOption = q.options.find(opt => opt.isCorrect);
+                    if (correctAnswerOption) {
+                        correctAnswerText = correctAnswerOption.text;
+                    }
+
+                    reviewItem.innerHTML = `
+                        <div class="flex justify-between mb-2">
+                            <span class="font-semibold">Question ${i + 1}</span>
+                            <span class="${isCorrect ? 'text-green-600' : 'text-red-600'}">${isCorrect ? 'Correct' : 'Incorrect'}</span>
+                        </div>
+                        <p class="mb-2">${q.question}</p>
+                        <div class="text-sm">
+                            <p class="mb-1"><span class="font-semibold">Votre réponse:</span> ${userAnswerText}</p>
+                            <p><span class="font-semibold">Réponse correcte:</span> ${correctAnswerText}</p>
+                        </div>
+                    `;
+
+                    questionReview.appendChild(reviewItem);
+                });
+            }
+
+            function startTimer() {
+                timeRemaining = 30; // Reset time for the new question
+                document.getElementById('timer').textContent = timeRemaining;
+
+                clearInterval(quizTimerInterval); // Clear any existing timer
+                quizTimerInterval = setInterval(function() {
+                    timeRemaining--;
+                    document.getElementById('timer').textContent = timeRemaining;
+
+                    if (timeRemaining <= 0) {
+                        clearInterval(quizTimerInterval);
+                        // Automatically move to the next question or finish quiz
+                        if (currentQuestionIndex < quizQuestions.length - 1) {
+                            // If no answer was selected when time ran out, mark as incorrect
+                            if (!quizQuestions[currentQuestionIndex].hasOwnProperty('userAnswer')) {
+                                quizQuestions[currentQuestionIndex].userAnswer = -1; // Indicate no answer
+                            }
+                            currentQuestionIndex++;
+                            loadQuestion(currentQuestionIndex);
+                        } else {
+                            // If time runs out on the last question
+                             if (!quizQuestions[currentQuestionIndex].hasOwnProperty('userAnswer')) {
+                                quizQuestions[currentQuestionIndex].userAnswer = -1; // Indicate no answer
+                            }
+                            finishQuiz();
+                        }
+                    }
+                }, 1000);
+            }
+
+            function resetTimer() {
+                clearInterval(quizTimerInterval); // Clear the current timer
+                startTimer(); // Start a new timer
+            }
+
+            // Reset quiz buttons
+            document.getElementById('restartQuizBtn').addEventListener('click', function() {
+                document.getElementById('quizResults').classList.add('hidden');
+                document.getElementById('quizContainer').classList.remove('hidden'); // Go back to quiz menu
+                 // Reset quiz category buttons state
+                 quizCategoryBtns.forEach(btn => {
+                     btn.classList.remove('btn-primary');
+                     btn.classList.add('btn-secondary');
+                 });
+                 // Set default category button to active state
+                 document.querySelector('.quiz-category-btn[data-category="all"]').classList.remove('btn-secondary');
+                 document.querySelector('.quiz-category-btn[data-category="all"]').classList.add('btn-primary');
+                 selectedQuizCategory = 'all'; // Reset selected category
+
+                 // Reset quiz size input
+                 document.getElementById('quizSize').value = 5;
+                 document.getElementById('quizQuestionLimit').textContent = 5;
+
+            });
+
+            document.getElementById('backToQuizMenuBtn').addEventListener('click', function() {
+                document.getElementById('quizResults').classList.add('hidden');
+                document.getElementById('quizContainer').classList.remove('hidden'); // Go back to quiz menu
+                 // Reset quiz category buttons state
+                 quizCategoryBtns.forEach(btn => {
+                     btn.classList.remove('btn-primary');
+                     btn.classList.add('btn-secondary');
+                 });
+                 // Set default category button to active state
+                 document.querySelector('.quiz-category-btn[data-category="all"]').classList.remove('btn-secondary');
+                 document.querySelector('.quiz-category-btn[data-category="all"]').classList.add('btn-primary');
+                 selectedQuizCategory = 'all'; // Reset selected category
+
+                  // Reset quiz size input
+                 document.getElementById('quizSize').value = 5;
+                 document.getElementById('quizQuestionLimit').textContent = 5;
+            });
+        });
+    </script>
+</body>
+</html>
+
+
+{% endblock %}

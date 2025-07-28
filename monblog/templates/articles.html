@@ -1,0 +1,418 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<title>Blog Articles</title>
+
+<style>
+    #quiz, #resultat, #imageRappel {
+        display: none;
+        margin-top: 30px;
+        background: #f9fafb;
+        padding: 20px;
+        border-radius: 10px;
+    }
+    #resultat h3 {
+        margin-bottom: 15px;
+        font-size: 1.3em;
+        color: #1e3a8a;
+    }
+    #resultat ul {
+        list-style-type: none;
+        padding-left: 0;
+    }
+    #resultat li {
+        margin-bottom: 10px;
+        padding: 10px;
+        border-radius: 6px;
+        font-size: 1em;
+    }
+    #resultat li.correct {
+        background-color: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+    #resultat li.incorrect {
+        background-color: #d4edda; /* green background */
+        color: #155724; /* green text */
+        font-size: 1.5em; /* larger font */
+        border: 1px solid #c3e6cb;
+    }
+    .appreciation {
+        font-size: 2em;
+        font-weight: bold;
+        color: #1e3a8a;
+        margin-top: 20px;
+    }
+    #resultat li.correct::before {
+        content: "✔️ ";
+        font-weight: bold;
+    }
+    #resultat li.incorrect::before {
+        content: "❌ ";
+        font-weight: bold;
+    }
+    button {
+        background-color: #1e3a8a;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 1em;
+        margin-top: 20px;
+        margin-right: 10px;
+    }
+    .container {
+        max-width: 960px;
+        margin: 20px auto;
+        padding: 30px;
+        background-color: #ffffff;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        border-radius: 10px;
+    }
+    .article, .quiz-section {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        margin-bottom: 30px;
+        padding-bottom: 30px;
+        border-bottom: 1px solid #e0e0e0;
+        opacity: 0;
+        transform: translateY(80px);
+        animation: fadeInUpContainer 1s ease-out forwards;
+        perspective: 1000px; /* enable 3D rotation */
+    }
+    .article img, .quiz-section img {
+        width: auto;
+        height: 200px;
+        max-width: 250px;
+        object-fit: cover;
+        border-radius: 8px;
+        margin-right: 30px;
+        opacity: 0;
+        transform: scale(0.7) rotate(8deg);
+        animation: imageEnter 1s ease-out 0.3s forwards;
+    }
+    .article-content, .quiz-section-content {
+        flex: 1;
+        opacity: 0;
+        transform: translateX(80px);
+        animation: contentEnter 1s ease-out 0.5s forwards;
+    }
+    .article-content h3, .article-content .kader, .article-content .date,
+    .quiz-section-content h3, .quiz-section-content .kader, .quiz-section-content .date {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    .article-content h3, .quiz-section-content h3 {
+        animation: textFadeIn 0.6s ease-out 1.2s forwards;
+    }
+    .article-content .kader, .quiz-section-content .kader {
+        animation: textFadeIn 0.6s ease-out 1.4s forwards;
+    }
+    .article-content .date, .quiz-section-content .date {
+        animation: textFadeIn 0.6s ease-out 1.6s forwards;
+    }
+    .kader p {
+        margin: 8px 0;
+    }
+
+    @keyframes fadeInUpContainer {
+        from { opacity: 0; transform: translateY(80px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes imageEnter {
+        from { opacity: 0; transform: scale(0.7) rotate(8deg); }
+        to { opacity: 1; transform: scale(1) rotate(0deg); }
+    }
+    @keyframes contentEnter {
+        from { opacity: 0; transform: translateX(80px); }
+        to { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes textFadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes flipImage {
+        0% { transform: rotateY(0deg); }
+        50% { transform: rotateY(180deg); }
+        100% { transform: rotateY(0deg); }
+    }
+
+    .flip-back {
+        display: block;
+        animation: flipImage 1.5s ease-in-out infinite;
+        transform-style: preserve-3d;
+        backface-visibility: hidden;
+        cursor: pointer;
+    }
+</style>
+
+<div class="container">
+    <h1>Voici les Articles pour les Flashcards</h1>
+
+    <div id="lesson">
+        {% for article in articles %}
+        <div class="article">
+            <img src="{{ article.images.url }}" alt="Image de l'article">
+            <div class="article-content">
+                <h3>{{ article.titre }}</h3>
+                <div class="kader">
+                    <p><strong>Auteur:</strong> {{ article.auteur.username }}</p>
+                    <p>{{ article.description }}</p>
+                </div>
+                <p class="date"><strong>Date:</strong> {{ article.date_publication }}</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <button onclick="preparerQuiz(questionsIA, 'IA')">Générer un flashcard sur l'IA</button>
+    
+
+    <div id="quiz">
+        <h2>Mes flashcards</h2>
+        <form id="quizForm"></form>
+        <button onclick="verifierReponses()" type="button">Valider</button>
+    </div>
+
+    <div id="resultat"></div>
+    <div id="imageRappel"></div>
+</div>
+
+<script>
+    let questionsEnCours = [];
+    let imageRappelHTML = "";
+    let quizSection = "";
+
+    const questionsIA = [
+        {
+            question: "Quel est l'impact principal de l'IA mentionné au début du texte ?",
+            options: [
+                "Elle ne concerne que le monde du travail.",
+                "Elle ne provoque que des améliorations mineures.",
+                "Elle continue de révolutionner le monde.",
+                "Son application se limite au domaine de la santé."
+            ],
+            correct: 2
+        },
+        {
+            question: "Selon le texte, lequel de ces domaines n'est PAS explicitement mentionné comme étant impacté par l'IA ?",
+            options: ["La Santé", "L'Éducation", "L'Industrie", "L'Art"],
+            correct: 3
+        },
+        {
+            question: "Comment les agents IA autonomes contribuent-ils à transformer le travail d'après le texte ?",
+            options: [
+                "En remplaçant intégralement les employés.",
+                "En gérant uniquement les plannings.",
+                "En rédigeant tous les emails.",
+                "En prenant en charge des tâches répétitives."
+            ],
+            correct: 3
+        },
+        {
+            question: "Qu'est-ce qui permet à l'IA d'améliorer la prise de décision selon le texte ?",
+            options: [
+                "L'intuition humaine.",
+                "L'analyse de données massives.",
+                "Le hasard.",
+                "Des calculs très simples."
+            ],
+            correct: 1
+        },
+        {
+            question: "Dans le contexte de la personnalisation de l'expérience client, que fait l'IA selon le texte ?",
+            options: [
+                "Elle appelle directement les clients pour prendre leur commande.",
+                "Elle envoie du courrier physique promotionnel.",
+                "Elle conçoit de nouveaux logos pour les entreprises.",
+                "Elle aide à recommander des produits et à analyser les conversations."
+            ],
+            correct: 3
+        }
+    ];
+
+    const questionsCyber = [
+        {
+            question: "Selon le texte, quel est l'objectif principal de la cybersécurité ?",
+            options: [
+                "Automatiser des tâches complexes.",
+                "Analyser des données massives.",
+                "Concevoir des sites web sécurisés.",
+                "Protéger les systèmes informatiques, les réseaux et les données."
+            ],
+            correct: 3
+        },
+        {
+            question: "Lequel de ces éléments n'est PAS mentionné dans le texte comme une cybermenace ?",
+            options: [
+                "Le piratage.",
+                "Les rançongiciels (ransomware).",
+                "Le vol de données.",
+                "Une panne matérielle."
+            ],
+            correct: 3
+        },
+        {
+            question: "Quels sont les trois objectifs principaux que la cybersécurité vise à garantir concernant les informations, selon le texte ?",
+            options: [
+                "Rapidité, Coût, Complexité.",
+                "Innovation, Créativité, Automatisation.",
+                "Régulation, Conformité, Protection.",
+                "Confidentialité, Intégrité, Disponibilité."
+            ],
+            correct: 3
+        },
+        {
+            question: "Selon le texte, qui a besoin de cybersécurité ?",
+            options: [
+                "Seulement les grandes entreprises.",
+                "Seulement les gouvernements.",
+                "Seulement les particuliers utilisant les réseaux sociaux.",
+                "Les particuliers, les entreprises et les institutions publiques."
+            ],
+            correct: 3
+        },
+        {
+            question: "Pourquoi la cybersécurité est-elle décrite comme cruciale dans le texte ?",
+            options: [
+                "Parce qu'elle crée de nouveaux emplois.",
+                "Parce que c'est une exigence légale partout dans le monde.",
+                "Parce qu'elle rend les ordinateurs plus rapides.",
+                "En raison de la dépendance croissante à la technologie et aux services numériques."
+            ],
+            correct: 3
+        }
+    ];
+
+    function preparerQuiz(questions, section) {
+        questionsEnCours = questions;
+        quizSection = section;
+
+        const lessonDiv = document.getElementById("lesson");
+        const rappel = lessonDiv.innerHTML;
+        imageRappelHTML = rappel;
+
+        document.getElementById("lesson").style.display = "none";
+        document.getElementById("quiz").style.display = "block";
+        document.getElementById("resultat").style.display = "none";
+        document.getElementById("imageRappel").style.display = "none";
+
+        demarrerQuiz(questions);
+    }
+
+    function demarrerQuiz(questions) {
+        let quizForm = document.getElementById('quizForm');
+        quizForm.innerHTML = '';
+
+        questions.forEach((q, index) => {
+            let questionElement = document.createElement('div');
+            questionElement.classList.add('quiz-section');
+            questionElement.style.flexDirection = 'column';  // Change flex direction to column for flashcard style
+
+if ((index >= 0 && index <= 4) && quizSection === 'IA') {
+    let videoSrc = "";
+    switch(index) {
+        case 0:
+            videoSrc = "/media/Video IA-1.mp4";
+            break;
+        case 1:
+            videoSrc = "/media/Video IA-2.mp4";
+            break;
+        case 2:
+            videoSrc = "/media/Video IA-3.mp4";
+            break;
+        case 3:
+            videoSrc = "/media/Video IA-4.mp4";
+            break;
+        case 4:
+            videoSrc = "/media/Video IA-5.mp4";
+            break;
+    }
+    let mediaId = `quiz-media-${index}`;
+
+    questionElement.innerHTML = `
+        <video id="${mediaId}" width="640" height="480" autoplay muted loop style="margin-bottom: 20px;">
+            <source src="${videoSrc}" type="video/mp4">
+            Votre navigateur ne supporte pas la lecture de vidéos.
+        </video>
+        <div class="quiz-section-content">
+            ${q.options.map((option, i) => `
+                <label>
+                    <input type="radio" name="q${index}" value="${i}"> ${option}
+                </label><br>
+            `).join('')}
+        </div>
+    `;
+
+    setTimeout(() => {
+        const media = document.getElementById(mediaId);
+        if (media && media.tagName.toLowerCase() === 'img') media.classList.remove('flip-back');
+    }, 15000);
+} else {
+    questionElement.innerHTML = `
+        <div class="quiz-section-content">
+            <p>${q.question}</p>
+            ${q.options.map((option, i) => `
+                <label>
+                    <input type="radio" name="q${index}" value="${i}"> ${option}
+                </label><br>
+            `).join('')}
+        </div>
+    `;
+}
+
+            quizForm.appendChild(questionElement);
+        });
+    }
+
+    function verifierReponses() {
+        let score = 0;
+        let réponsesCorrectes = [];
+        let scoreParQuestion = [];
+
+        questionsEnCours.forEach((q, index) => {
+            const userAnswer = document.querySelector(`input[name="q${index}"]:checked`);
+        if (userAnswer && parseInt(userAnswer.value) === q.correct) {
+            score++;
+            réponsesCorrectes.push(`<li class="correct"><strong>Question ${index + 1}:</strong> Votre réponse est correcte: ${q.options[q.correct]}</li>`);
+            scoreParQuestion.push(`<p>Question ${index + 1} : 1 point</p>`);
+        } else {
+            let userResponseText = userAnswer ? q.options[parseInt(userAnswer.value)] : "Aucune réponse sélectionnée";
+            réponsesCorrectes.push(`<li class="incorrect"><strong>Question ${index + 1}:</strong> Votre réponse: ${userResponseText}. La bonne réponse est: <span class="correct">${q.options[q.correct]}</span></li>`);
+            scoreParQuestion.push(`<p>Question ${index + 1} : 0 point</p>`);
+        }
+    });
+
+    let appreciation = "";
+    let pourcentage = (score / questionsEnCours.length) * 100;
+    if (pourcentage >= 60) {
+        appreciation = "<p>Vous avez réussi votre module  😊👋</p>";
+    } else {
+        appreciation = "<p>Vous n'avez pas réussi votre module  😞</p>";
+    }
+
+    document.getElementById("resultat").innerHTML = `
+        <h3>Votre score est ${score} sur ${questionsEnCours.length}.</h3>
+        ${scoreParQuestion.join('')}
+        <strong>Réponses correctes:</strong>
+        <ul>${réponsesCorrectes.join('')}</ul>
+        <div class="appreciation">${appreciation}</div>
+    `;
+    document.getElementById("resultat").style.display = "block";
+
+    const revolutionIA = document.querySelector('.article-content h3');
+    revolutionIA.scrollIntoView({ behavior: 'smooth' });
+
+    document.querySelector('.article-content').innerHTML = `
+        <h3>${revolutionIA.innerHTML}</h3>
+        <p>${revolutionIA.nextElementSibling.innerHTML}</p>
+    `;
+    document.getElementById("imageRappel").style.display = "block";
+}
+</script>
+
+{% endblock %}

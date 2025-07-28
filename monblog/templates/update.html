@@ -1,0 +1,142 @@
+{% block extra_head %}
+<!-- Font Awesome pour les icônes si tu en ajoutes -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+<style>
+  * {
+    box-sizing: border-box;
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    font-family: 'Segoe UI', sans-serif;
+    background: linear-gradient(to right, #004080, #007BFF);
+  }
+
+  body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: auto;
+  }
+
+  .container {
+    background-color: #ffffff;
+    padding: 40px 30px;
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+    width: 100%;
+    max-width: 540px;
+    text-align: center;
+    margin: 20px;
+  }
+
+  h1 {
+    margin-bottom: 20px;
+    color: #004080;
+    font-size: 28px;
+  }
+
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    text-align: left;
+  }
+
+  form p {
+    margin: 0;
+  }
+
+  form label {
+    font-weight: 600;
+    margin-bottom: 5px;
+    color: #004080;
+  }
+
+  form input,
+  form select {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 15px;
+    transition: border-color 0.3s;
+  }
+
+  form input:focus,
+  form select:focus {
+    border-color: #007BFF;
+    outline: none;
+  }
+
+  form textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 15px;
+    transition: border-color 0.3s;
+    min-height: 150px;
+    resize: vertical;
+  }
+
+  form textarea:focus {
+    border-color: #007BFF;
+    outline: none;
+  }
+
+  button[type="submit"] {
+    padding: 12px;
+    background-color: #007BFF;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+
+  button[type="submit"]:hover {
+    background-color: #0056b3;
+  }
+
+  .errorlist {
+    color: #dc3545;
+    font-size: 0.9rem;
+    font-weight: bold;
+    list-style: none;
+    padding: 0;
+    margin: 5px 0;
+  }
+
+  .errorlist li {
+    margin-bottom: 4px;
+  }
+
+  @media (max-width: 480px) {
+    .container {
+      padding: 30px 20px;
+      border-radius: 8px;
+    }
+
+    h1 {
+      font-size: 22px;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+  <h1>Modifier un article</h1>
+  <form method="POST">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Modifier</button>
+  </form>
+</div>
+{% endblock %}

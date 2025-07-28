@@ -1,0 +1,78 @@
+{% block extra_head %}
+<style>
+  body {
+    font-family: 'Segoe UI', sans-serif;
+    background: linear-gradient(to right, #004080, #007BFF);
+    color: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+  }
+
+  .container {
+    background-color: #ffffff;
+    color: #004080;
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+    text-align: center;
+    max-width: 500px;
+    width: 100%;
+  }
+
+  h1 {
+    margin-bottom: 20px;
+  }
+
+  p {
+    margin-bottom: 30px;
+  }
+
+  .actions {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .actions a, .actions button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+    text-decoration: none;
+    color: #fff;
+  }
+
+  .actions .btn-cancel {
+    background-color: #6c757d;
+  }
+
+  .actions .btn-delete {
+    background-color: #dc3545;
+  }
+
+  .actions .btn-cancel:hover {
+    background-color: #5a6268;
+  }
+
+  .actions .btn-delete:hover {
+    background-color: #c82333;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+  <h1>Confirmer la suppression</h1>
+  <p>Êtes-vous sûr de vouloir supprimer l'article "{{ article.titre }}" ?</p>
+  <div class="actions">
+    <a href="{% url 'articles' %}" class="btn-cancel">Annuler</a>
+    <form method="POST" style="display: inline;">
+      {% csrf_token %}
+      <button type="submit" class="btn-delete">Supprimer</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

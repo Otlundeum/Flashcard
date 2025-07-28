@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Calculateur de Moyennes</title>
+    <style>
+        /* Styles de base */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f0f8ff;
+            color: #003366;
+            margin: 0;
+            padding: 10px;
+            -webkit-text-size-adjust: 100%;
+        }
+        
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            background-color: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            color: #0066cc;
+            text-align: center;
+            border-bottom: 2px solid #0066cc;
+            padding-bottom: 8px;
+            font-size: 1.4rem;
+            margin-top: 0;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            font-size: 0.9rem;
+        }
+        
+        th, td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        th {
+            background-color: #0066cc;
+            color: white;
+            position: sticky;
+            top: 0;
+        }
+        
+        tr:nth-child(even) {
+            background-color: #f2f9ff;
+        }
+        
+        input {
+            width: 50px;
+            padding: 6px;
+            border: 1px solid #0066cc;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            -webkit-appearance: none;
+        }
+        
+        button {
+            background-color: #0066cc;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 1rem;
+            display: block;
+            margin: 15px auto;
+            width: 90%;
+            max-width: 300px;
+        }
+        
+        .results {
+            margin-top: 20px;
+            padding: 12px;
+            background-color: #e6f2ff;
+            border-radius: 8px;
+            font-size: 0.95rem;
+        }
+
+        /* Styles pour l'appréciation */
+        .appreciation {
+            font-weight: bold;
+            font-size: 0.85rem;
+        }
+        .excellent { color: #2e8b57; }
+        .tres-bien { color: #3cb371; }
+        .bien { color: #4682b4; }
+        .passable { color: #ffa500; }
+        .insuffisant { color: #ff4500; }
+
+        /* Media Queries pour iPhone */
+        @media only screen and (max-width: 500px) {
+            table {
+                display: block;
+                overflow-x: auto;
+                white-space: nowrap;
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            th, td {
+                min-width: 80px;
+            }
+            
+            .container {
+                padding: 10px;
+            }
+            
+            h1 {
+                font-size: 1.2rem;
+            }
+        }
+
+        /* Optimisation pour Safari iOS */
+        @supports (-webkit-touch-callout: none) {
+            input {
+                font-size: 16px; /* Empêche le zoom automatique sur iOS */
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Le reste du code HTML reste inchangé -->
+    <div class="container">
+        <h1>Calculateur de Moyennes Universitaires</h1>
+        
+        <table id="grades-table">
+            <thead>
+                <tr>
+                    <th>Matière</th>
+                    <th>Eval</th>
+                    <th>VDC</th>
+                    <th>CC</th>
+                    <th>Exam</th>
+                    <th>Moy</th>
+                    <th>Appréciation</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Les lignes seront ajoutées dynamiquement -->
+            </tbody>
+        </table>
+        
+        <button onclick="calculateAverages()">Recalculer</button>
+        
+        <div class="results" id="results">
+            <h2>Résultats</h2>
+            <p id="general-average">Moyenne Générale: -</p>
+            <p id="general-appreciation">Appréciation: -</p>
+        </div>
+    </div>
+
+    <script>
+        // Le code JavaScript reste inchangé
+        const subjects = [
+            { name: "Admin Systèmes Win", eval: 16, vdc: 16, cc: 16, exam: 0 },
+            { name: "Algèbre Linéaire 2", eval: 9.25, vdc: 9.25, cc: 9.25, exam: 10 },
+            { name: "Algorithme 2", eval: 6, vdc: 6, cc: 6, exam: 0 },
+            { name: "Anglais Niveau 2", eval: 14, vdc: 14, cc: 14, exam: 15 },
+            { name: "Intro Cryptographie", eval: 15, vdc: 15, cc: 15, exam: 14 },
+            { name: "Réseaux & Routage", eval: 15, vdc: 16, cc: 15.5, exam: 16 },
+            { name: "Cybersécurité (FCF)", eval: 13, vdc: 13, cc: 13, exam: 13 }
+        ];
+
+        function getAppreciation(average) {
+            if (average >= 16) return {text: "Excellent", class: "excellent"};
+            if (average >= 14) return {text: "Très bien", class: "tres-bien"};
+            if (average >= 12) return {text: "Bien", class: "bien"};
+            if (average >= 10) return {text: "Passable", class: "passable"};
+            return {text: "Insuffisant", class: "insuffisant"};
+        }
+
+        function initializeTable() {
+            const tbody = document.querySelector('#grades-table tbody');
+            tbody.innerHTML = '';
+            
+            subjects.forEach(subject => {
+                const row = document.createElement('tr');
+                
+                row.innerHTML = `
+                    <td>${subject.name}</td>
+                    <td><input type="number" value="${subject.eval}" min="0" max="20" step="0.01" oninput="calculateAverages()"></td>
+                    <td><input type="number" value="${subject.vdc}" min="0" max="20" step="0.01" oninput="calculateAverages()"></td>
+                    <td><input type="number" value="${subject.cc}" min="0" max="20" step="0.01" oninput="calculateAverages()"></td>
+                    <td><input type="number" value="${subject.exam}" min="0" max="20" step="0.01" oninput="calculateAverages()"></td>
+                    <td class="subject-average">-</td>
+                    <td class="subject-appreciation">-</td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+        }
+
+        function calculateAverages() {
+            const rows = document.querySelectorAll('#grades-table tbody tr');
+            let total = 0;
+            let count = 0;
+            
+            rows.forEach(row => {
+                const inputs = row.querySelectorAll('input');
+                const evalNote = parseFloat(inputs[0].value) || 0;
+                const vdcNote = parseFloat(inputs[1].value) || 0;
+                const ccNote = parseFloat(inputs[2].value) || 0;
+                const examNote = parseFloat(inputs[3].value) || 0;
+                
+                const notes = [evalNote, vdcNote, ccNote, examNote].filter(n => n > 0);
+                const average = notes.length > 0 ? (notes.reduce((a, b) => a + b, 0) / notes.length) : 0;
+                
+                row.querySelector('.subject-average').textContent = average.toFixed(2);
+                
+                const appreciation = getAppreciation(average);
+                const appreciationCell = row.querySelector('.subject-appreciation');
+                appreciationCell.textContent = appreciation.text;
+                appreciationCell.className = 'subject-appreciation appreciation ' + appreciation.class;
+                
+                if (notes.length > 0) {
+                    total += average;
+                    count++;
+                }
+            });
+            
+            const generalAverage = count > 0 ? total / count : 0;
+            document.getElementById('general-average').textContent = 
+                `Moyenne Générale: ${generalAverage.toFixed(2)}`;
+            
+            const generalAppreciation = getAppreciation(generalAverage);
+            const generalAppreciationElement = document.getElementById('general-appreciation');
+            generalAppreciationElement.textContent = `Appréciation: ${generalAppreciation.text}`;
+            generalAppreciationElement.className = 'appreciation ' + generalAppreciation.class;
+        }
+
+        window.onload = initializeTable;
+    </script>
+</body>
+</html>

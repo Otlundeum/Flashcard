@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+  <h1>Créer un Quiz</h1>
+  <form method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ quiz_form.as_p }}
+
+    <!-- Flashcards Selection -->
+    <div class="form-group">
+        <label for="flashcards">Sélectionnez les Flashcards :</label>
+        <select id="flashcards" name="flashcards" multiple class="form-control">
+            {% for flashcard in flashcards %}
+            <option value="{{ flashcard.id }}">{{ flashcard.question }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div id="questionsContainer"></div>
+    <button type="button" id="addQuestionBtn" class="btn btn-success">Ajouter une question</button>
+    <button type="submit" class="btn btn-primary" style="margin-top: 20px;">Enregistrer le Quiz</button>
+  </form>
+</div>
+
+<script>
+  const questionsContainer = document.getElementById('questionsContainer');
+  const addQuestionBtn = document.getElementById('addQuestionBtn');
+  let questionCount = 0;
+
+  addQuestionBtn.addEventListener('click', () => {
+    questionCount++;
+    const questionDiv = document.createElement('div');
+    questionDiv.classList.add('question-block');
+    questionDiv.style.marginBottom = '20px';
+
+    questionDiv.innerHTML = `
+      <label>Question ${questionCount}:</label>
+      <input type="text" name="question${questionCount}" required style="width: 100%; padding: 8px; margin-bottom: 10px; border-radius: 6px; border: 1px solid #ccc;">
+      <label>Options (séparées par des virgules):</label>
+      <input type="text" name="options${questionCount}" required placeholder="Option1, Option2, Option3, Option4" style="width: 100%; padding: 8px; margin-bottom: 10px; border-radius: 6px; border: 1px solid #ccc;">
+      <label>Index de la bonne réponse (0-based):</label>
+      <input type="number" name="correct${questionCount}" min="0" required style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ccc;">
+    `;
+
+    questionsContainer.appendChild(questionDiv);
+  });
+</script>
+{% endblock %}

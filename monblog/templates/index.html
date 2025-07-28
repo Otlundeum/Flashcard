@@ -1,0 +1,7 @@
+{%extends "base.html"%}
+{% block content %}
+   <h1 style="text-align: center; color: red">Ma premiere plage</h1>
+    {% for i in categorie %}
+    <h3>{{i.nom}}</h3>
+    {% endfor %}
+    {% endblock %}

@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Page d'inscription</title>
+
+  <!-- Font Awesome pour les icônes -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #ffffff;
+      overflow-x: hidden;
+    }
+
+    .formulaire {
+      width: 100%;
+      max-width: 600px;
+      margin: 60px auto;
+      padding: 30px 25px;
+      border: 4px solid rgb(255, 103, 103);
+      border-radius: 20px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+      background-color: #ffffff;
+
+      /* animation */
+      opacity: 0;
+      transform: translateY(30px);
+      animation: fadeInUp 0.8s ease forwards;
+    }
+
+    @keyframes fadeInUp {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    h2 {
+      text-align: center;
+      color: #d10000;
+      margin-bottom: 25px;
+    }
+
+    label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 6px;
+      color: #444;
+    }
+
+    .input-group {
+      position: relative;
+      margin-bottom: 15px;
+    }
+
+    .input-group i {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #999;
+    }
+
+    .input-group input {
+      width: 100%;
+      padding: 10px 10px 10px 36px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 15px;
+    }
+
+    .password-rules {
+      font-size: 0.9em;
+      color: #666;
+      background-color: #f2f2f2;
+      padding: 10px 15px;
+      border-radius: 6px;
+      margin-bottom: 15px;
+    }
+
+    .password-rules ul {
+      padding-left: 20px;
+      margin: 0;
+    }
+
+    .formulaire button,
+    .formulaire .se-connecter {
+      width: 100%;
+      padding: 12px;
+      background-color: #d10000;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 1em;
+      cursor: pointer;
+      margin-top: 10px;
+      text-align: center;
+      text-decoration: none;
+      display: inline-block;
+      transition: background-color 0.3s ease;
+    }
+
+    .formulaire button:hover,
+    .formulaire .se-connecter:hover {
+      background-color: #a00000;
+    }
+
+    @media (max-width: 500px) {
+      .formulaire {
+        margin: 20px;
+        padding: 20px 15px;
+      }
+
+      h2 {
+        font-size: 22px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="formulaire">
+    <h2>Inscription</h2>
+    <form method="POST">
+      {% csrf_token %}
+
+      <label for="username">Nom d'utilisateur :</label>
+      <div class="input-group">
+        <i class="fa fa-user"></i>
+        <input type="text" id="username" name="username" required minlength="3" maxlength="150"
+          placeholder="150 caractères ou moins. Lettres, chiffres et @/_- autorisés.">
+      </div>
+
+      <label for="password">Mot de passe :</label>
+      <div class="input-group">
+        <i class="fa fa-lock"></i>
+        <input type="password" id="password" name="password" required minlength="8" placeholder="Entrez un mot de passe">
+      </div>
+
+      <div class="password-rules">
+        <ul>
+          <li>Le mot de passe ne doit pas être trop similaire à vos infos personnelles.</li>
+          <li>Il doit contenir au moins 8 caractères.</li>
+          <li>Évitez les mots de passe trop communs.</li>
+          <li>Ne doit pas être entièrement numérique.</li>
+        </ul>
+      </div>
+
+      <label for="password_confirmation">Confirmer le mot de passe :</label>
+      <div class="input-group">
+        <i class="fa fa-lock"></i>
+        <input type="password" id="password_confirmation" name="password_confirmation" required
+          placeholder="Confirmez le mot de passe">
+      </div>
+
+      <button type="submit">S'inscrire</button>
+    </form>
+    <a class="se-connecter" href="{% url 'login' %}"><i class="fa fa-sign-in-alt"></i> Se connecter</a>
+  </div>
+</body>
+</html>

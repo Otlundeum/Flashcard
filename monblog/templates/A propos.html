@@ -1,0 +1,1185 @@
+
+{% extends "base.html" %}
+{% block content %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>À propos – Flashcard Pro | Apprendre intelligemment</title>
+    <link href="https://cdn.jsdelivr.net/npm/inter-ui@3.19.3/inter.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fontsource/poppins@4.5.10/index.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.11.4/dist/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.11.4/dist/ScrollTrigger.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.144.0/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lottie-web@5.10.0/build/player/lottie.min.js"></script>
+    <style>
+        :root {
+            --primary: #4361ee;
+            --primary-dark: #3a56d4;
+            --secondary: #7209b7;
+            --accent: #f72585;
+            --text: #1f2937;
+            --text-light: #6b7280;
+            --light-bg: #f9fafb;
+            --card-bg: #ffffff;
+            --success: #10b981;
+            --gradient-1: linear-gradient(135deg, #4361ee 0%, #3a56d4 60%, #7209b7 100%);
+            --gradient-2: linear-gradient(135deg, #7209b7 0%, #f72585 100%);
+            --gradient-card: linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(67,97,238,0.05) 100%);
+        }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+            color: var(--text);
+            background-color: var(--light-bg);
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        h1, h2, h3, h4, h5 {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 700;
+        }
+
+        .hero-gradient {
+            background: linear-gradient(135deg, #4361ee 0%, #3a56d4 60%, #7209b7 100%);
+        }
+
+        .blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(60px);
+            opacity: 0.4;
+            z-index: 0;
+        }
+
+        .card-3d {
+            transform-style: preserve-3d;
+            perspective: 1000px;
+            transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        .card-3d:hover {
+            transform: translateY(-10px) rotateX(5deg) rotateY(5deg);
+            box-shadow: 0 30px 50px -20px rgba(67, 97, 238, 0.15);
+        }
+
+        .card-3d .card-content {
+            backface-visibility: hidden;
+        }
+
+        .stat-card {
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.1);
+        }
+
+        .glow-button {
+            position: relative;
+            z-index: 1;
+            overflow: hidden;
+            transition: all 0.5s ease;
+        }
+
+        .glow-button:before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 200%;
+            height: 200%;
+            background: var(--gradient-2);
+            transform: translate(-50%, -50%);
+            z-index: -1;
+            opacity: 0;
+            transition: all 0.8s ease;
+            border-radius: inherit;
+        }
+
+        .glow-button:hover:before {
+            opacity: 1;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 0.5;
+            }
+            50% {
+                transform: translate(-50%, -50%) scale(1.05);
+                opacity: 0.8;
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 0.5;
+            }
+        }
+
+        .text-gradient {
+            background: linear-gradient(90deg, #4361ee, #7209b7);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .circle-progress {
+            position: relative;
+            width: 120px;
+            height: 120px;
+        }
+
+        .progress-ring {
+            transform: rotate(-90deg);
+            transform-origin: center;
+        }
+
+        .progress-ring-circle {
+            stroke-dasharray: 283;
+            stroke-dashoffset: 283;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 1s ease-in-out;
+        }
+
+        .arrow-path {
+            stroke-dasharray: 1000;
+            stroke-dashoffset: 1000;
+            animation: draw 2s ease forwards;
+        }
+
+        @keyframes draw {
+            to {
+                stroke-dashoffset: 0;
+            }
+        }
+
+        .floating {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-15px);
+            }
+            100% {
+                transform: translateY(0px);
+            }
+        }
+
+        .card-hover-effect {
+            transition: all 0.4s ease;
+        }
+
+        .card-hover-effect:hover {
+            transform: translateY(-10px);
+        }
+
+        #threeJsCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+
+        .btn-primary {
+            background: var(--gradient-1);
+            color: white;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(67, 97, 238, 0.3);
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 8px 25px rgba(67, 97, 238, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .wave-animation {
+            position: absolute;
+            width: 100%;
+            bottom: -2px;
+            left: 0;
+        }
+
+        /* Scroll indicator */
+        .mouse-scroll {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 30px;
+            height: 50px;
+            border: 2px solid rgba(255, 255, 255, 0.7);
+            border-radius: 15px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .mouse-wheel {
+            width: 6px;
+            height: 10px;
+            background: white;
+            border-radius: 3px;
+            margin-top: 10px;
+            animation: mouse-scroll 2s infinite;
+        }
+
+        @keyframes mouse-scroll {
+            0% {
+                opacity: 0;
+                transform: translateY(0);
+            }
+            50% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+        }
+
+        .timeline-line {
+            position: absolute;
+            height: 100%;
+            width: 2px;
+            background: linear-gradient(to bottom, rgba(67, 97, 238, 0.1), rgba(67, 97, 238, 1));
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 0;
+        }
+
+        .timeline-item {
+            position: relative;
+            z-index: 1;
+            transition: all 0.5s ease;
+        }
+
+        .timeline-dot {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--primary);
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            left: 50%; /* Centered */
+            margin-left: -10px; /* Half of width */
+            box-shadow: 0 0 0 4px rgba(67, 97, 238, 0.2);
+        }
+
+         .timeline-item:nth-child(odd) .timeline-dot {
+            left: 50%;
+            margin-left: -10px;
+         }
+
+         .timeline-item:nth-child(even) .timeline-dot {
+            left: 50%;
+            margin-left: -10px;
+         }
+
+
+        .ripple {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: var(--primary);
+            opacity: 0.5;
+            transform: scale(1);
+            animation: ripple 2s infinite;
+        }
+
+        @keyframes ripple {
+            0% {
+                transform: scale(1);
+                opacity: 0.5;
+            }
+            100% {
+                transform: scale(2);
+                opacity: 0;
+            }
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-dark);
+        }
+
+        /* Animation fade-in pour le texte ajouté */
+        .fade-in-text {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 1s ease-out, transform 1s ease-out;
+        }
+
+        .fade-in-text.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Ajout pour le texte défilant */
+        .scrolling-text-container {
+            overflow: hidden;
+            white-space: nowrap;
+            width: 100%;
+        }
+
+        #scrollingText {
+            display: inline-block;
+            padding-left: 100%;
+            animation: scrollText 30s linear infinite;
+        }
+
+        @keyframes scrollText {
+            from {
+                transform: translateX(0);
+            }
+            to {
+                transform: translateX(-100%);
+            }
+        }
+
+         /* Adjust timeline item positioning for better centering */
+         .timeline-item {
+             width: calc(50% - 10px); /* Adjust width to account for line and dot */
+             margin-left: 0;
+         }
+
+         .timeline-item:nth-child(odd) {
+             margin-right: 10px; /* Space from the center line */
+             text-align: right;
+         }
+
+         .timeline-item:nth-child(even) {
+             margin-left: calc(50% + 10px); /* Space from the center line */
+             text-align: left;
+         }
+
+          .timeline-item:nth-child(odd) .timeline-dot {
+             left: auto;
+             right: -10px; /* Position dot on the right of the item */
+         }
+
+         .timeline-item:nth-child(even) .timeline-dot {
+             left: -10px; /* Position dot on the left of the item */
+             right: auto;
+         }
+
+          /* Responsive adjustments for timeline */
+         @media (max-width: 768px) {
+             .timeline-line {
+                 left: 20px; /* Move line to the left */
+                 transform: translateX(0);
+             }
+
+             .timeline-item {
+                 width: 100%;
+                 margin-left: 40px; /* Space for the line and dot */
+                 margin-right: 0;
+                 text-align: left; /* Align text left */
+             }
+
+             .timeline-item:nth-child(odd),
+             .timeline-item:nth-child(even) {
+                 margin-left: 40px;
+                 margin-right: 0;
+                 text-align: left;
+             }
+
+             .timeline-item .timeline-dot {
+                 left: 10px; /* Position dot next to the line */
+                 right: auto;
+                 margin-left: 0;
+             }
+         }
+    </style>
+</head>
+<body>
+    <header class="hero-gradient relative min-h-screen flex items-center justify-center overflow-hidden">
+        <div id="threeJsCanvas"></div>
+
+        <div class="blob bg-blue-400 w-96 h-96 top-20 -left-32"></div>
+        <div class="blob bg-purple-400 w-80 h-80 bottom-20 -right-20"></div>
+
+        <div class="relative z-10 text-center px-4 max-w-5xl" data-aos="fade-up">
+            <div class="mb-8">
+                <div id="logoAnimation" class="w-24 h-24 mx-auto mb-3"></div>
+            </div>
+            <h1 class="text-5xl md:text-7xl font-bold text-white mb-6">À propos de <span class="relative">Flashcard Pro<span class="absolute -bottom-2 left-0 w-full h-1 bg-accent rounded-full"></span></span></h1>
+            <p class="text-xl md:text-2xl text-white/90 max-w-3xl mx-auto mb-10">Votre partenaire pour un apprentissage efficace et durable.</p>
+
+            <div class="flex flex-wrap justify-center gap-6 mt-12">
+                <div class="stat-card p-6 rounded-2xl shadow-xl max-w-xs" data-aos="zoom-in" data-aos-delay="100">
+                    <div class="text-4xl font-bold text-primary mb-2">
+                        <span class="js-counter" data-target="95">0</span>%
+                    </div>
+                    <p class="text-text-light">Taux de réussite aux examens après utilisation régulière</p>
+                </div>
+                <div class="stat-card p-6 rounded-2xl shadow-xl max-w-xs" data-aos="zoom-in" data-aos-delay="200">
+                    <div class="text-4xl font-bold text-primary mb-2">
+                        <span class="js-counter" data-target="3">0</span>x
+                    </div>
+                    <p class="text-text-light">Vitesse d'apprentissage multipliée par rapport aux méthodes traditionnelles</p>
+                </div>
+                <div class="stat-card p-6 rounded-2xl shadow-xl max-w-xs" data-aos="zoom-in" data-aos-delay="300">
+                    <div class="text-4xl font-bold text-primary mb-2">
+                        <span class="js-counter" data-target="500">0</span>k+
+                    </div>
+                    <p class="text-text-light">Utilisateurs actifs dans le monde entier</p>
+                </div>
+            </div>
+
+            <div class="mouse-scroll">
+                <div class="mouse-wheel"></div>
+            </div>
+        </div>
+
+        <div class="wave-animation">
+            <svg viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M0 0L60 10C120 20 240 40 360 50C480 60 600 60 720 50C840 40 960 20 1080 15C1200 10 1320 20 1380 25L1440 30V120H1380C1320 120 1200 120 1080 120C960 120 840 120 720 120C600 120 480 120 360 120C240 120 120 120 60 120H0V0Z" fill="white"/>
+            </svg>
+        </div>
+    </header>
+
+    <main class="bg-white">
+        <section class="relative py-24 px-6">
+            <div class="max-w-6xl mx-auto">
+                <div class="flex flex-col md:flex-row gap-16 items-center">
+                    <div class="w-full md:w-1/2" data-aos="fade-right">
+                        <span class="text-accent font-medium uppercase tracking-wider">Notre mission</span>
+                        <h2 class="text-4xl md:text-5xl font-bold mt-3 mb-8">Transformer l'apprentissage avec la <span class="text-gradient">science de la mémoire</span></h2>
+                        <p class="text-lg text-text-light mb-6 fade-in-text">
+                             Chez Flashcard Pro, notre mission est de révolutionner la façon dont vous apprenez et mémorisez. Nous croyons que l'apprentissage doit être accessible, efficace et adapté à chacun. C'est pourquoi nous avons développé une application de flashcards puissante, basée sur des principes scientifiques de mémorisation, pour vous aider à maîtriser n'importe quel sujet, des langues aux sciences, en passant par les examens professionnels.
+                        </p>
+                        <p class="text-lg text-text-light mb-8 fade-in-text">
+                            Nous nous engageons à fournir un outil intuitif et performant qui s'adapte à votre rythme d'apprentissage, en vous proposant les cartes à réviser au moment optimal pour renforcer votre mémoire à long terme.
+                        </p>
+
+                        <div class="flex gap-4">
+                            <div class="relative circle-progress">
+                                <svg class="progress-ring" width="120" height="120">
+                                    <circle class="progress-ring-circle bg" stroke="#e6e6e6" stroke-width="8" fill="transparent" r="45" cx="60" cy="60"/>
+                                    <circle class="progress-ring-circle fg" stroke="#4361ee" stroke-width="8" fill="transparent" r="45" cx="60" cy="60" stroke-dashoffset="283"/>
+                                </svg>
+                                <div class="absolute inset-0 flex items-center justify-center text-xl font-bold">92%</div>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-lg">Efficacité prouvée</h4>
+                                <p class="text-text-light">De nos utilisateurs améliorent leurs résultats en seulement 2 semaines</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="w-full md:w-1/2 relative h-96" data-aos="fade-left">
+                        <div class="absolute w-full h-full rounded-lg overflow-hidden">
+                            <div id="mission-visual" class="w-full h-full"></div>
+                        </div>
+                        <div class="absolute -bottom-10 -right-10 bg-white rounded-lg p-6 shadow-xl">
+                            <div class="flex items-center gap-3">
+                                <div class="text-5xl font-bold text-primary">87%</div>
+                                <div class="text-text-light">Réduction du temps d'apprentissage</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="text-scroll-section py-16 px-6 bg-light-bg">
+            <div class="max-w-6xl mx-auto">
+                <div class="text-center mb-16" data-aos="fade-up">
+                    <span class="text-accent font-medium uppercase tracking-wider">Nos valeurs</span>
+                    <h2 class="text-4xl md:text-5xl font-bold mt-3 mb-6">Découvrez nos engagements</h2>
+                    <div class="overflow-hidden">
+                        <div id="scrollingText" class="text-lg text-text-light whitespace-nowrap">
+                            Chez Flashcard Pro, nous croyons que la réussite passe par une mémorisation intelligente.
+                            Notre mission est simple : rendre l’apprentissage plus accessible, efficace et durable pour tous.
+                            Nous concevons des flashcards pédagogiques interactives, créées en collaboration avec des enseignants experts et optimisées grâce à l’intelligence artificielle. Chaque carte est pensée pour aider les étudiants, professionnels ou autodidactes à assimiler l’essentiel plus rapidement, à mieux retenir sur le long terme, et à réviser plus intelligemment.
+                            Grâce à des techniques éprouvées comme la répétition espacée, la personnalisation du contenu et l’analyse des performances, nos flashcards s’adaptent à chaque utilisateur. Que ce soit pour réviser un examen, renforcer des compétences ou apprendre quelque chose de nouveau, Flashcard Pro vous accompagne à chaque étape.
+                            Notre ambition va au-delà de la simple révision : nous voulons transformer la façon dont chacun apprend, en offrant un outil moderne, stimulant et accessible à tous.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="relative py-24 px-6 bg-light-bg overflow-hidden">
+            <div class="blob bg-blue-100 w-96 h-96 -top-20 -left-32"></div>
+            <div class="blob bg-purple-100 w-80 h-80 -bottom-20 -right-20"></div>
+
+            <div class="max-w-6xl mx-auto relative">
+                <div class="text-center mb-16" data-aos="fade-up">
+                    <span class="text-accent font-medium uppercase tracking-wider">Méthode innovante</span>
+                    <h2 class="text-4xl md:text-5xl font-bold mt-3 mb-8">Comment ça fonctionne ?</h2>
+                    <p class="text-lg text-text-light max-w-3xl mx-auto">Nous combinons l'intelligence artificielle et l'expertise pédagogique pour générer des flashcards optimisées selon vos besoins. Notre système adapte les questions, les formats et les intervalles de répétition pour maximiser la rétention d'informations.</p>
+                </div>
+
+                <div class="relative">
+                    <div class="timeline-line"></div>
+
+                    <div class="space-y-20 relative z-10">
+                        <div class="timeline-item ml-10 md:ml-0 md:ml-[50%] p-6 bg-white rounded-xl shadow-lg max-w-lg" data-aos="fade-left">
+                            <span class="timeline-dot">
+                                <span class="ripple"></span>
+                            </span>
+                            <h3 class="text-2xl font-bold mb-4">1. Analyse de votre contenu</h3>
+                            <p class="text-text-light mb-3">Notre IA analyse vos documents ou sujets d'étude pour identifier les concepts clés et les relations entre eux.</p>
+                            <div class="mt-4 bg-light-bg p-3 rounded-lg">
+                                <div class="flex items-center">
+                                    <svg class="w-8 h-8 text-primary mr-3" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM11 13a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path>
+                                    </svg>
+                                    <div>
+                                        <div class="font-medium">Reconnaissance de structure</div>
+                                        <div class="text-sm text-text-light">Extraction intelligente des éléments importants</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="timeline-item ml-10 md:ml-0 md:mr-[50%] p-6 bg-white rounded-xl shadow-lg max-w-lg" data-aos="fade-right">
+                            <span class="timeline-dot">
+                                <span class="ripple"></span>
+                            </span>
+                            <h3 class="text-2xl font-bold mb-4">2. Création des flashcards intelligentes</h3>
+                            <p class="text-text-light mb-3">Des flashcards optimales sont générées avec différents formats de questions adaptés à la matière et à votre style d'apprentissage.</p>
+                            <div class="card-3d bg-white rounded-lg shadow-md p-4 mt-4 max-w-xs mx-auto border border-gray-200">
+                                <div class="card-content">
+                                    <div class="text-sm text-text-light mb-2">Médecine / Anatomie</div>
+                                    <div class="font-bold mb-4">Quel est le plus grand os du corps humain ?</div>
+                                    <div class="mt-4 text-right">
+                                        <span class="text-xs text-text-light">Cliquer pour révéler</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="timeline-item ml-10 md:ml-0 md:ml-[50%] p-6 bg-white rounded-xl shadow-lg max-w-lg" data-aos="fade-left">
+                            <span class="timeline-dot">
+                                <span class="ripple"></span>
+                            </span>
+                            <h3 class="text-2xl font-bold mb-4">3. Apprentissage adaptatif</h3>
+                            <p class="text-text-light mb-3">Notre algorithme de répétition espacée analyse vos performances et ajuste les intervalles de révision pour une mémorisation optimale.</p>
+                            <div class="mt-4">
+                                <div class="h-4 w-full bg-gray-200 rounded-full overflow-hidden">
+                                    <div class="h-full bg-primary rounded-full skill-bar" data-width="75%" style="width: 0%"></div>
+                                </div>
+                                <div class="flex justify-between mt-2 text-sm">
+                                    <span>Progrès d'apprentissage</span>
+                                    <span class="font-medium">75%</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="timeline-item ml-10 md:ml-0 md:mr-[50%] p-6 bg-white rounded-xl shadow-lg max-w-lg" data-aos="fade-right">
+                            <span class="timeline-dot">
+                                <span class="ripple"></span>
+                            </span>
+                            <h3 class="text-2xl font-bold mb-4">4. Analyse des performances</h3>
+                            <p class="text-text-light mb-3">Suivez votre progression grâce à des rapports détaillés et des visualisations qui identifient vos points forts et axes d'amélioration.</p>
+                            <div class="mt-4 h-40 relative">
+                                <canvas id="performanceChart" height="160"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="relative py-24 px-6">
+            <div class="max-w-6xl mx-auto">
+                <div class="text-center mb-16" data-aos="fade-up">
+                    <span class="text-accent font-medium uppercase tracking-wider">Ce qui nous démarque</span>
+                    <h2 class="text-4xl md:text-5xl font-bold mt-3 mb-6">Nos atouts</h2>
+                    <p class="text-lg text-text-light max-w-3xl mx-auto">Notre approche combine technologie de pointe et science de l'apprentissage pour offrir une expérience inégalée.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                    <div class="card-hover-effect p-6 bg-gradient-card rounded-xl shadow-lg border border-transparent hover:border-primary/30 transition-all" data-aos="fade-up" data-aos-delay="100">
+                        <div class="w-14 h-14 rounded-lg bg-primary/10 flex items-center justify-center mb-6">
+                            <svg class="w-8 h-8 text-primary" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-bold mb-3">Contenu validé par des experts</h3>
+                        <p class="text-text-light">Toutes nos cartes sont rédigées et révisées par des professionnels de l'éducation pour garantir qualité et exactitude.</p>
+                        <div class="mt-6 w-full h-1 bg-gray-100 rounded-full overflow-hidden">
+                            <div class="h-full bg-success rounded-full skill-bar" data-width="98%" style="width: 0%"></div>
+                        </div>
+                        <div class="flex justify-between mt-1 text-xs">
+                            <span class="text-text-light">Taux de précision</span>
+                            <span class="font-medium">98%</span>
+                        </div>
+                    </div>
+
+                    <div class="card-hover-effect p-6 bg-gradient-card rounded-xl shadow-lg border border-transparent hover:border-primary/30 transition-all" data-aos="fade-up" data-aos-delay="200">
+                        <div class="w-14 h-14 rounded-lg bg-primary/10 flex items-center justify-center mb-6">
+                            <svg class="w-8 h-8 text-primary" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-bold mb-3">Adaptation personnalisée</h3>
+                        <p class="text-text-light">Notre moteur intelligent s'ajuste à votre niveau, vos performances et votre rythme d'apprentissage.</p>
+                        <div class="mt-6 mb-3 relative p-4 bg-light-bg rounded-lg">
+                            <div class="flex items-center text-sm">
+                                <div class="w-2 h-2 rounded-full bg-primary mr-2"></div>
+                                <div class="flex-1">Algorithme d'adaptation</div>
+                                <div class="font-medium">+63%</div>
+                            </div>
+                            <div class="flex items-center text-sm mt-2">
+                                <div class="w-2 h-2 rounded-full bg-accent mr-2"></div>
+                                <div class="flex-1">Apprentissage traditionnel</div>
+                                <div class="font-medium">Base</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card-hover-effect p-6 bg-gradient-card rounded-xl shadow-lg border border-transparent hover:border-primary/30 transition-all" data-aos="fade-up" data-aos-delay="300">
+                        <div class="w-14 h-14 rounded-lg bg-primary/10 flex items-center justify-center mb-6">
+                            <svg class="w-8 h-8 text-primary" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-bold mb-3">Design ergonomique</h3>
+                        <p class="text-text-light">Nos flashcards sont conçues pour être agréables à lire, accessibles sur mobile, tablette et ordinateur.</p>
+                        <div class="mt-6 flex gap-3">
+                            <div class="p-2 bg-light-bg rounded-md text-primary">
+                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M2 3a1 1 0 011-1h14a1 1 0 011 1v14a1 1 0 01-1 1H3a1 1 0 01-1-1V3z"></path>
+                                </svg>
+                            </div>
+                            <div class="p-2 bg-light-bg rounded-md text-primary">
+                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5z"></path>
+                                    <path d="M11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM14 11a1 1 0 011 1v1h1a1 1 0 110 2h-1v1a1 1 0 11-2 0v-1h-1a1 1 0 110-2h1v-1a1 1 0 011-1z"></path>
+                                </svg>
+                            </div>
+                            <div class="p-2 bg-light-bg rounded-md text-primary">
+                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                    <path fill-rule="evenodd" d="M7 2a2 2 0 00-2 2v12a2 2 0 002 2h6a2 2 0 002-2V4a2 2 0 00-2-2H7zm3 14a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"></path>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card-hover-effect p-6 bg-gradient-card rounded-xl shadow-lg border border-transparent hover:border-primary/30 transition-all" data-aos="fade-up" data-aos-delay="400">
+                        <div class="w-14 h-14 rounded-lg bg-primary/10 flex items-center justify-center mb-6">
+                            <svg class="w-8 h-8 text-primary" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03zM12.12 15.12A3 3 0 017 13s.879.5 2.5.5c0-1 .5-4 1.25-4.5.5 1 .786 1.293 1.371 1.879A2.99 2.99 0 0113 13a2.99 2.99 0 01-.879 2.121z" clip-rule="evenodd"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-bold mb-3">Apprentissage durable</h3>
+                        <p class="text-text-light">En utilisant la répétition espacée et les rappels ciblés, vous retenez plus d'informations à long terme.</p>
+                        <div class="mt-6 relative">
+                            <svg class="w-full" height="60" viewBox="0 0 200 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path class="arrow-path" d="M10,50 Q50,10 100,40 T190,15" stroke="#4361ee" stroke-width="2" fill="none"/>
+                                <circle cx="190" cy="15" r="4" fill="#4361ee" />
+                            </svg>
+                            <div class="absolute bottom-0 left-0 text-xs">Aujourd'hui</div>
+                            <div class="absolute bottom-0 right-0 text-xs">3 mois</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-16 text-center" data-aos="fade-up">
+                    <a href="#" class="glow-button inline-block px-8 py-4 bg-primary text-white font-medium rounded-lg hover:bg-primary-dark transition-all transform hover:-translate-y-1 hover:shadow-lg">
+                        <div class="flex items-center gap-2">
+                            <span>Découvrir toutes nos fonctionnalités</span>
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                            </svg>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+         <section class="relative py-24 px-6 bg-white overflow-hidden">
+             <div class="max-w-6xl mx-auto text-center" data-aos="fade-up">
+                 <span class="text-accent font-medium uppercase tracking-wider">Qui sommes-nous ?</span>
+                 <h2 class="text-4xl md:text-5xl font-bold mt-3 mb-8">Notre Équipe</h2>
+                 <p class="text-lg text-text-light max-w-3xl mx-auto">
+                     Nous sommes une équipe passionnée par l'éducation et la technologie, dédiée à la création d'outils qui facilitent l'apprentissage. Nous nous efforçons constamment d'améliorer Flashcard Pro pour répondre à vos besoins.
+                 </p>
+                 </div>
+        </section>
+
+
+        <section class="relative py-24 px-6 bg-light-bg overflow-hidden">
+            <div class="blob bg-blue-100 w-96 h-96 -top-20 right-0"></div>
+            <div class="blob bg-purple-100 w-80 h-80 -bottom-20 left-0"></div>
+
+            <div class="max-w-6xl mx-auto relative">
+                <div class="flex flex-col lg:flex-row gap-16 items-center">
+                    <div class="w-full lg:w-1/2 relative floating" data-aos="fade-right">
+                        <div id="vision-animation" class="w-full h-96"></div>
+                    </div>
+
+                    <div class="w-full lg:w-1/2" data-aos="fade-left">
+                        <span class="text-accent font-medium uppercase tracking-wider">Un pas vers le futur</span>
+                        <h2 class="text-4xl md:text-5xl font-bold mt-3 mb-8">Notre vision</h2>
+                        <p class="text-lg text-text-light mb-6">Nous croyons que l'accès à la connaissance doit être simple, agréable et efficace. Flashcard Pro s'engage à offrir une solution moderne de révision qui accompagne chacun vers la réussite, dans un monde où l'apprentissage continu est essentiel.</p>
+                        <p class="text-lg text-text-light mb-8">Notre ambition : devenir le compagnon d'apprentissage privilégié des étudiants et professionnels du monde entier, en rendant la mémorisation aussi naturelle que respirer.</p>
+
+                        <div class="grid grid-cols-2 gap-6 mt-8">
+                            <div class="p-5 bg-white rounded-lg shadow-md">
+                                <div class="text-2xl text-primary font-bold mb-2">2026</div>
+                                <div class="font-medium">Objectif d'utilisateurs actifs</div>
+                                <div class="text-accent text-2xl font-bold mt-1">2M+</div>
+                            </div>
+                            <div class="p-5 bg-white rounded-lg shadow-md">
+                                <div class="text-2xl text-primary font-bold mb-2">100%</div>
+                                <div class="font-medium">De satisfaction</div>
+                                <div class="text-accent text-xl font-bold mt-1">Notre engagement</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="relative py-16 px-6 bg-primary text-white overflow-hidden">
+            <div class="blob bg-white/10 w-96 h-96 -top-48 -right-48"></div>
+            <div class="blob bg-white/10 w-80 h-80 -bottom-40 -left-40"></div>
+
+            <div class="max-w-5xl mx-auto text-center relative" data-aos="zoom-in">
+                <h2 class="text-4xl font-bold mb-6">Prêt à révolutionner votre façon d'apprendre ?</h2>
+                <p class="text-xl opacity-90 mb-8 max-w-3xl mx-auto">Rejoignez des milliers d'apprenants qui ont transformé leur expérience d'apprentissage grâce à Flashcard Pro.</p>
+                <a href="#" class="inline-block px-8 py-4 bg-white text-primary font-medium rounded-lg hover:bg-opacity-95 transition-all transform hover:-translate-y-1 hover:shadow-lg">
+                    <div class="flex items-center gap-2">
+                        <span>Commencer gratuitement</span>
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                        </svg>
+                    </div>
+                </a>
+                <div class="mt-8 text-sm opacity-75">Aucune carte de crédit requise • Accès immédiat</div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-gray-800 text-white py-16 px-6">
+        <div class="max-w-6xl mx-auto">
+            <div class="flex flex-wrap justify-between">
+                <div class="w-full md:w-1/3 mb-10 md:mb-0">
+                    <div class="mb-6">
+                        <h3 class="text-2xl font-bold mb-2">Flashcard Pro</h3>
+                        <p class="text-gray-300">Rendre l'apprentissage plus intelligent, personnalisé et accessible à tous.</p>
+                    </div>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-300 hover:text-white transition-colors">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" clip-rule="evenodd"></path>
+                            </svg>
+                        </a>
+                        <a href="#" class="text-gray-300 hover:text-white transition-colors">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84"></path>
+                            </svg>
+                        </a>
+                        <a href="#" class="text-gray-300 hover:text-white transition-colors">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" d="M12.315 2c2.43 0 2.784.013 3.808.06 1.064.049 1.791.218 2.427.465a4.902 4.902 0 011.772 1.153 4.902 4.902 0 011.153 1.772c.247.636.416 1.363.465 2.427.048 1.067.06 1.407.06 4.123v.08c0 2.643-.012 2.987-.06 4.043-.049 1.064-.218 1.791-.465 2.427a4.902 4.902 0 01-1.153 1.772 4.902 4.902 0 01-1.772 1.153c-.636.247-1.363.416-2.427.465-1.067.048-1.407.06-4.123.06h-.08c-2.643 0-2.987-.012-4.043-.06-1.064-.049-1.791-.218-2.427-.465a4.902 4.902 0 01-1.772-1.153 4.902 4.902 0 01-1.153-1.772c-.247-.636-.416-1.363-.465-2.427-.047-1.024-.06-1.379-.06-3.808v-.63c0-2.43.013-2.784.06-3.808.049-1.064.218-1.791.465-2.427a4.902 4.902 0 011.153-1.772A4.902 4.902 0 015.45 2.525c.636-.247 1.363-.416 2.427-.465C8.901 2.013 9.256 2 11.685 2h.63zm-.081 1.802h-.468c-2.456 0-2.784.011-3.807.058-.975.045-1.504.207-1.857.344-.467.182-.8.398-1.15.748-.35.35-.566.683-.748 1.15-.137.353-.3.882-.344 1.857-.047 1.023-.058 1.351-.058 3.807v.468c0 2.456.011 2.784.058 3.807.045.975.207 1.504.344 1.857.182.466.399.8.748 1.15.35.35.683.566 1.15.748.353.137.882.3 1.857.344 1.054.048 1.37.058 4.041.058h.08c2.597 0 2.917-.01 3.96-.058.976-.045 1.505-.207 1.858-.344.466-.182.8-.398 1.15-.748.35-.35.566-.683.748-1.15.137-.353.3-.882.344-1.857.048-1.055.058-1.37.058-4.041v-.08c0-2.597-.01-2.917-.058-3.96-.045-.976-.207-1.505-.344-1.858a3.097 3.097 0 00-.748-1.15 3.098 3.098 0 00-1.15-.748c-.353-.137-.882-.3-1.857-.344-1.023-.047-1.351-.058-3.807-.058zM12 6.865a5.135 5.135 0 110 10.27 5.135 5.135 0 010-10.27zm0 1.802a3.333 3.333 0 100 6.666 3.333 3.333 0 000-6.666zm5.338-3.205a1.2 1.2 0 110 2.4 1.2 1.2 0 010-2.4z" clip-rule="evenodd"></path>
+                            </svg>
+                        </a>
+                        <a href="#" class="text-gray-300 hover:text-white transition-colors">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" clip-rule="evenodd"></path>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="w-full md:w-1/5 mb-8 md:mb-0">
+                    <h4 class="text-lg font-bold mb-4">Liens utiles</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-300 hover:text-white transition-colors">Accueil</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white transition-colors">Fonctionnalités</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white transition-colors">Tarifs</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white transition-colors">Blog</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white transition-colors">À propos</a></li>
+                    </ul>
+                </div>
+
+                <div class="w-full md:w-1/5 mb-8 md:mb-0">
+                    <h4 class="text-lg font-bold mb-4">Support</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-300 hover:text-white transition-colors">FAQ</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white transition-colors">Centre d'aide</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white transition-colors">Tutoriels</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white transition-colors">Contact</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white transition-colors">Communauté</a></li>
+                    </ul>
+                </div>
+
+                <div class="w-full md:w-1/4">
+                    <h4 class="text-lg font-bold mb-4">Restez informé</h4>
+                    <p class="text-gray-300 mb-4">Recevez nos dernières mises à jour et conseils d'apprentissage.</p>
+                    <form class="flex">
+                        <input type="email" placeholder="Votre email" class="px-4 py-2 w-full rounded-l-lg focus:outline-none" />
+                        <button class="bg-accent px-4 py-2 rounded-r-lg text-white hover:bg-opacity-90 transition-colors">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"></path>
+                                <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"></path>
+                            </svg>
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="border-t border-gray-700 mt-10 pt-6 flex flex-col md:flex-row justify-between items-center">
+                <div class="text-gray-400 mb-4 md:mb-0">&copy; 2025 Flashcard Pro – Tous droits réservés</div>
+                <div class="flex space-x-6">
+                    <a href="#" class="text-gray-400 hover:text-white transition-colors">Conditions d'utilisation</a>
+                    <a href="#" class="text-gray-400 hover:text-white transition-colors">Politique de confidentialité</a>
+                    <a href="#" class="text-gray-400 hover:text-white transition-colors">Mentions légales</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+    <script>
+        // Initialiser AOS (Animate On Scroll)
+        document.addEventListener('DOMContentLoaded', function() {
+            // Démarrer les animations AOS
+            AOS.init({
+                duration: 800,
+                easing: 'ease-out',
+                once: true
+            });
+
+            // Animer les barres de compétence
+            document.querySelectorAll('.skill-bar').forEach(bar => {
+                setTimeout(() => {
+                    bar.style.width = bar.getAttribute('data-width');
+                }, 500);
+            });
+
+            // Animation des compteurs
+            document.querySelectorAll('.js-counter').forEach(counter => {
+                const target = parseInt(counter.getAttribute('data-target'));
+                const duration = 2000; // 2 secondes
+                const step = target / (duration / 16); // 60fps
+                let current = 0;
+
+                const updateCounter = () => {
+                    current += step;
+                    if (current < target) {
+                        counter.textContent = Math.ceil(current);
+                        requestAnimationFrame(updateCounter);
+                    } else {
+                        counter.textContent = target;
+                    }
+                };
+
+                // Trigger counter animation when element is visible
+                const observer = new IntersectionObserver((entries, observer) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            updateCounter();
+                            observer.unobserve(entry.target); // Stop observing once animated
+                        }
+                    });
+                });
+
+                observer.observe(counter);
+            });
+
+            // Animation du cercle de progression
+            const progressRing = document.querySelector('.progress-ring-circle.fg');
+            const targetProgress = 92;
+            const circumference = 2 * Math.PI * 45;
+            progressRing.style.strokeDasharray = `${circumference} ${circumference}`;
+            progressRing.style.strokeDashoffset = circumference; // Start hidden
+
+             const progressObserver = new IntersectionObserver((entries, observer) => {
+                 entries.forEach(entry => {
+                     if (entry.isIntersecting) {
+                         setTimeout(() => {
+                             const offset = circumference - (targetProgress / 100) * circumference;
+                             progressRing.style.strokeDashoffset = offset;
+                         }, 500);
+                         observer.unobserve(entry.target);
+                     }
+                 });
+             });
+
+             progressObserver.observe(progressRing.closest('.circle-progress'));
+
+
+            // Initialisation du graphique de performance
+            const ctx = document.getElementById('performanceChart').getContext('2d');
+            const gradient = ctx.createLinearGradient(0, 0, 0, 160);
+            gradient.addColorStop(0, 'rgba(67, 97, 238, 0.7)');
+            gradient.addColorStop(1, 'rgba(67, 97, 238, 0.1)');
+
+             let performanceChart; // Declare chart variable
+
+             const chartObserver = new IntersectionObserver((entries, observer) => {
+                 entries.forEach(entry => {
+                     if (entry.isIntersecting) {
+                         performanceChart = new Chart(ctx, {
+                             type: 'line',
+                             data: {
+                                 labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin'],
+                                 datasets: [{
+                                     label: 'Performance d\'apprentissage',
+                                     data: [65, 72, 68, 75, 82, 90],
+                                     backgroundColor: gradient,
+                                     borderColor: '#4361ee',
+                                     borderWidth: 2,
+                                     pointBackgroundColor: '#ffffff',
+                                     pointBorderColor: '#4361ee',
+                                     pointRadius: 4,
+                                     tension: 0.3,
+                                     fill: true
+                                 }]
+                             },
+                             options: {
+                                 responsive: true,
+                                 maintainAspectRatio: false,
+                                 plugins: {
+                                     legend: {
+                                         display: false
+                                     },
+                                     tooltip: {
+                                         backgroundColor: '#ffffff',
+                                         titleColor: '#1f2937',
+                                         bodyColor: '#1f2937',
+                                         borderColor: '#e5e7eb',
+                                         borderWidth: 1,
+                                         padding: 10,
+                                         displayColors: false,
+                                         callbacks: {
+                                             title: function(tooltipItem) {
+                                                 return 'Mois: ' + tooltipItem[0].label;
+                                             },
+                                             label: function(context) {
+                                                 return 'Score: ' + context.raw + '%';
+                                             }
+                                         }
+                                     }
+                                 },
+                                 scales: {
+                                     x: {
+                                         grid: {
+                                             display: false
+                                         }
+                                     },
+                                     y: {
+                                         beginAtZero: true,
+                                         grid: {
+                                             color: 'rgba(0, 0, 0, 0.05)'
+                                         },
+                                         ticks: {
+                                             callback: function(value) {
+                                                 return value + '%';
+                                             }
+                                         }
+                                     }
+                                 }
+                             }
+                         });
+                         observer.unobserve(entry.target);
+                     }
+                 });
+             });
+
+             chartObserver.observe(document.getElementById('performanceChart'));
+
+
+            // Animation 3D flashcards avec Three.js
+            const canvas = document.getElementById('threeJsCanvas');
+
+            // Configuration Three.js
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / (window.innerHeight * 0.7), 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+
+            renderer.setSize(window.innerWidth, window.innerHeight * 0.7);
+            canvas.appendChild(renderer.domElement);
+
+            // Créer les cartes 3D
+            const cards = [];
+            const createCard = (x, y, z) => {
+                const geometry = new THREE.BoxGeometry(1, 1.4, 0.05);
+                const material = new THREE.MeshPhongMaterial({
+                    color: 0x4361ee,
+                    specular: 0x4361ee,
+                    shininess: 30,
+                    transparent: true,
+                    opacity: 0.8
+                });
+                const card = new THREE.Mesh(geometry, material);
+                card.position.set(x, y, z);
+                card.rotation.y = Math.random() * 0.3 - 0.15;
+                card.rotation.x = Math.random() * 0.3 - 0.15;
+
+                cards.push({
+                    mesh: card,
+                    rotSpeed: Math.random() * 0.01 - 0.005,
+                    floatSpeed: Math.random() * 0.01 + 0.005
+                });
+
+                scene.add(card);
+            };
+
+            // Créer plusieurs cartes
+            for (let i = 0; i < 15; i++) {
+                const x = Math.random() * 10 - 5;
+                const y = Math.random() * 6 - 3;
+                const z = Math.random() * 5 - 10;
+                createCard(x, y, z);
+            }
+
+            // Ajouter éclairage
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+            scene.add(ambientLight);
+
+            const light = new THREE.DirectionalLight(0xffffff, 1);
+            light.position.set(5, 5, 5);
+            scene.add(light);
+
+            camera.position.z = 5;
+
+            // Animation des cartes
+            function animate() {
+                requestAnimationFrame(animate);
+
+                cards.forEach(card => {
+                    card.mesh.rotation.y += card.rotSpeed;
+                    card.mesh.position.y += Math.sin(Date.now() * 0.001) * card.floatSpeed * 0.1;
+                });
+
+                renderer.render(scene, camera);
+            }
+
+            // Redimensionnement du canvas
+            function onWindowResize() {
+                camera.aspect = window.innerWidth / (window.innerHeight * 0.7);
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight * 0.7);
+            }
+
+            window.addEventListener('resize', onWindowResize);
+
+            // Démarrer l'animation
+            animate();
+
+            // Créer les animations Lottie
+            const logoAnimation = lottie.loadAnimation({
+                container: document.getElementById('logoAnimation'),
+                renderer: 'svg',
+                loop: true,
+                autoplay: true,
+                path: 'https://assets8.lottiefiles.com/packages/lf20_z01bika0.json' // Animation générique de logo éducatif
+            });
+
+            const missionVisual = lottie.loadAnimation({
+                container: document.getElementById('mission-visual'),
+                renderer: 'svg',
+                loop: true,
+                autoplay: true,
+                path: 'https://assets9.lottiefiles.com/packages/lf20_bp5lntrf.json' // Animation d'apprentissage
+            });
+
+            const visionAnimation = lottie.loadAnimation({
+                container: document.getElementById('vision-animation'),
+                renderer: 'svg',
+                loop: true,
+                autoplay: true,
+                path: 'https://assets2.lottiefiles.com/packages/lf20_jtbfg2nb.json' // Animation de vision/croissance
+            });
+
+            // Initialiser GSAP ScrollTrigger
+            gsap.registerPlugin(ScrollTrigger);
+
+            // Animation du texte avec GSAP
+            gsap.from('.text-gradient', {
+                backgroundPosition: '200% 0',
+                duration: 2,
+                ease: 'power4.out',
+                repeat: -1,
+                yoyo: true
+            });
+
+            // Animation 3D des cartes au survol
+            document.querySelectorAll('.card-3d').forEach(card => {
+                card.addEventListener('mousemove', function(e) {
+                    const rect = card.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+
+                    const centerX = rect.width / 2;
+                    const centerY = rect.height / 2;
+
+                    const rotateY = ((x - centerX) / centerX) * 10;
+                    const rotateX = ((centerY - y) / centerY) * 10;
+
+                    card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateZ(10px)`;
+                });
+
+                card.addEventListener('mouseleave', function() {
+                    card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) translateZ(0)';
+                });
+            });
+
+            // Animation de défilement de texte avec GSAP
+            const scrollingTextElement = document.getElementById('scrollingText');
+            if (scrollingTextElement) {
+                gsap.to(scrollingTextElement, {
+                    x: -scrollingTextElement.scrollWidth, // Scroll the full width of the text
+                    duration: 30, // Adjust duration as needed
+                    repeat: -1,
+                    ease: "linear"
+                });
+            }
+
+
+            // Animation fade-in pour les paragraphes de mission
+            const missionParagraphs = document.querySelectorAll('.fade-in-text');
+             const missionObserver = new IntersectionObserver((entries, observer) => {
+                 entries.forEach(entry => {
+                     if (entry.isIntersecting) {
+                         entry.target.classList.add('visible');
+                         observer.unobserve(entry.target);
+                     }
+                 });
+             }, { threshold: 0.5 }); // Trigger when 50% of the element is visible
+
+             missionParagraphs.forEach(p => {
+                 missionObserver.observe(p);
+             });
+
+        });
+    </script>
+</body>
+</html>
+{% endblock %}
+
+
