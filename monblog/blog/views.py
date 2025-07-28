@@ -24,9 +24,13 @@ def user_login(request):
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
-            return redirect('home')  # Redirige vers la page d'accueil après connexion
+            return redirect('home')
         else:
-            return render(request, 'login.html', {'error': "Nom d'utilisateur ou mot de passe incorrect."})
+            # Affiche le nom d'utilisateur et un message d'erreur pour debug
+            return render(request, 'login.html', {
+                'error': "Nom d'utilisateur ou mot de passe incorrect.",
+                'username': username
+            })
     return render(request, 'login.html')
 
 @login_required(login_url='login')
