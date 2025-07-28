@@ -190,19 +190,15 @@ def register(request):
         form = UserCreationForm(request.POST)
         if form.is_valid():
             user = form.save()
-            # Connexion automatique après inscription
-            from django.contrib.auth import login, authenticate
             username = form.cleaned_data.get('username')
             raw_password = form.cleaned_data.get('password1')
             user = authenticate(username=username, password=raw_password)
             if user is not None:
                 login(request, user)
-                return redirect('home')  # Redirige vers la page flashcards
-            else:
-                return redirect('login')
+            return redirect('home')
     else:
         form = UserCreationForm()
-    return render(request, 'register.html', {'form': form, 'success': True})
+    return render(request, 'register.html', {'form': form})
 
 @login_required
 def delete_article(request, id):
