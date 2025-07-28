@@ -1,215 +1,128 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Page d'inscription</title>
-
-  <!-- Font Awesome pour les icônes -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Inscription</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-
   <style>
-    * {
-      box-sizing: border-box;
-    }
-
+    * { box-sizing: border-box; }
     html, body {
       margin: 0;
       padding: 0;
       height: 100%;
       font-family: 'Segoe UI', sans-serif;
-      background-color: #ffffff;
-      overflow-x: hidden;
+      background: linear-gradient(to right, #004080, #007BFF);
     }
-
-    .formulaire {
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: auto;
+    }
+    .container {
+      background-color: #ffffff;
+      padding: 40px 30px;
+      border-radius: 12px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
       width: 100%;
-      max-width: 600px;
-      margin: 60px auto;
-      padding: 30px 25px;
-      border: 4px solid rgb(255, 103, 103);
-      border-radius: 20px;
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-      background-color: #ffffff;
-
-      /* animation */
-      opacity: 0;
-      transform: translateY(30px);
-      animation: fadeInUp 0.8s ease forwards;
-    }
-
-    @keyframes fadeInUp {
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    h2 {
+      max-width: 400px;
       text-align: center;
-      color: #d10000;
-      margin-bottom: 25px;
+      margin: 20px;
     }
-
-    label {
-      display: block;
-      font-weight: bold;
-      margin-bottom: 6px;
-      color: #444;
+    h1 {
+      margin-bottom: 20px;
+      color: #004080;
+      font-size: 28px;
     }
-
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
     .input-group {
       position: relative;
-      margin-bottom: 15px;
     }
-
     .input-group i {
       position: absolute;
       left: 12px;
       top: 50%;
       transform: translateY(-50%);
-      color: #999;
+      color: #aaa;
     }
-
     .input-group input {
       width: 100%;
-      padding: 10px 10px 10px 36px;
+      padding: 12px 12px 12px 36px;
       border: 1px solid #ccc;
       border-radius: 6px;
       font-size: 15px;
+      transition: border-color 0.3s;
     }
-
-    .password-rules {
-      font-size: 0.9em;
-      color: #666;
-      background-color: #f2f2f2;
-      padding: 10px 15px;
-      border-radius: 6px;
-      margin-bottom: 15px;
+    .input-group input:focus {
+      border-color: #007BFF;
+      outline: none;
     }
-
-    .password-rules ul {
-      padding-left: 20px;
-      margin: 0;
-    }
-
-    .formulaire button,
-    .formulaire .se-connecter {
-      width: 100%;
+    button {
       padding: 12px;
-      background-color: #d10000;
+      background-color: #007BFF;
       color: #fff;
       border: none;
       border-radius: 6px;
-      font-size: 1em;
+      font-size: 16px;
       cursor: pointer;
-      margin-top: 10px;
-      text-align: center;
-      text-decoration: none;
-      display: inline-block;
       transition: background-color 0.3s ease;
     }
-
-    .formulaire button:hover,
-    .formulaire .se-connecter:hover {
-      background-color: #a00000;
+    button:hover {
+      background-color: #0056b3;
     }
-
-    @media (max-width: 500px) {
-      .formulaire {
-        margin: 20px;
-        padding: 20px 15px;
+    a {
+      display: block;
+      margin-top: 15px;
+      color: #007BFF;
+      font-size: 14px;
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+    .debug-message {
+      color: #d10000;
+      background: #ffeaea;
+      border-radius: 6px;
+      padding: 10px;
+      margin-bottom: 10px;
+      font-size: 0.98em;
+    }
+    @media (max-width: 480px) {
+      .container {
+        padding: 30px 20px;
+        border-radius: 8px;
       }
-
-      h2 {
+      h1 {
         font-size: 22px;
       }
     }
   </style>
 </head>
-
 <body>
-  <div class="formulaire">
-    <h2>Inscription</h2>
-    <style>
-      .register-container {
-        max-width: 400px;
-        margin: 40px auto;
-        padding: 30px 20px;
-        background: #fff;
-        border-radius: 12px;
-        box-shadow: 0 4px 16px rgba(0,0,0,0.10);
-        display: flex;
-        flex-direction: column;
-        gap: 18px;
-      }
-      .register-container label {
-        font-weight: 500;
-        margin-bottom: 4px;
-        color: #333;
-      }
-      .register-container input {
-        padding: 10px 12px;
-        border: 1px solid #ccc;
-        border-radius: 6px;
-        font-size: 1em;
-        margin-bottom: 10px;
-        width: 100%;
-        box-sizing: border-box;
-      }
-      .register-container button {
-        background: #007BFF;
-        color: #fff;
-        border: none;
-        border-radius: 6px;
-        padding: 12px;
-        font-size: 1em;
-        cursor: pointer;
-        transition: background 0.2s;
-      }
-      .register-container button:hover {
-        background: #0056b3;
-      }
-      .register-container .debug-message {
-        color: #d10000;
-        background: #ffeaea;
-        border-radius: 6px;
-        padding: 10px;
-        margin-bottom: 10px;
-        font-size: 0.98em;
-      }
-      .register-container .se-connecter {
-        display: block;
-        text-align: center;
-        margin-top: 10px;
-        color: #007BFF;
-        text-decoration: none;
-        font-weight: 500;
-      }
-      .register-container .se-connecter:hover {
-        text-decoration: underline;
-      }
-      @media (max-width: 500px) {
-        .register-container {
-          padding: 15px 5px;
-          margin: 10px;
-        }
-      }
-    </style>
-    <div class="register-container">
-      <form method="POST">
-        {% csrf_token %}
-        <label for="username">Nom d'utilisateur :</label>
-        <input type="text" id="username" name="username" required placeholder="Nom d'utilisateur">
-        <label for="password">Mot de passe :</label>
-        <input type="password" id="password" name="password" required placeholder="Mot de passe">
-        <button type="submit">S'inscrire</button>
-      </form>
-      {% if debug_message %}
-        <div class="debug-message">{{ debug_message }}</div>
-      {% endif %}
-      <a class="se-connecter" href="{% url 'login' %}"><i class="fa fa-sign-in-alt"></i> Se connecter</a>
-    </div>
+  <div class="container">
+    <h1>Inscription</h1>
+    <form method="POST">
+      {% csrf_token %}
+      <div class="input-group">
+        <i class="fa fa-user"></i>
+        <input type="text" name="username" placeholder="Nom d'utilisateur" required>
+      </div>
+      <div class="input-group">
+        <i class="fa fa-lock"></i>
+        <input type="password" name="password" placeholder="Mot de passe" required>
+      </div>
+      <button type="submit">S'inscrire</button>
+    </form>
+    {% if debug_message %}
+      <div class="debug-message">{{ debug_message }}</div>
+    {% endif %}
+    <a href="{% url 'login' %}"><i class="fa fa-sign-in-alt"></i> Se connecter</a>
   </div>
 </body>
 </html>

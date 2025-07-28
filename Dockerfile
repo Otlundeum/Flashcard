@@ -15,6 +15,8 @@ COPY . .
 
 # Expose le port 8000
 EXPOSE 8000
+RUN python monblog/manage.py migrate
+
 
 # Commande de démarrage
 CMD ["python", "monblog/manage.py", "runserver", "0.0.0.0:8000"]
