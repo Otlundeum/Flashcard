@@ -131,18 +131,85 @@
 <body>
   <div class="formulaire">
     <h2>Inscription</h2>
-    <form method="POST">
-      {% csrf_token %}
-      <label for="username">Nom d'utilisateur :</label>
-      <input type="text" id="username" name="username" required placeholder="Nom d'utilisateur">
-      <label for="password">Mot de passe :</label>
-      <input type="password" id="password" name="password" required placeholder="Mot de passe">
-      <button type="submit">S'inscrire</button>
-    </form>
-    {% if debug_message %}
-      <div style="color:red; margin-top:10px;">{{ debug_message }}</div>
-    {% endif %}
-    <a class="se-connecter" href="{% url 'login' %}"><i class="fa fa-sign-in-alt"></i> Se connecter</a>
+    <style>
+      .register-container {
+        max-width: 400px;
+        margin: 40px auto;
+        padding: 30px 20px;
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.10);
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+      }
+      .register-container label {
+        font-weight: 500;
+        margin-bottom: 4px;
+        color: #333;
+      }
+      .register-container input {
+        padding: 10px 12px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        font-size: 1em;
+        margin-bottom: 10px;
+        width: 100%;
+        box-sizing: border-box;
+      }
+      .register-container button {
+        background: #007BFF;
+        color: #fff;
+        border: none;
+        border-radius: 6px;
+        padding: 12px;
+        font-size: 1em;
+        cursor: pointer;
+        transition: background 0.2s;
+      }
+      .register-container button:hover {
+        background: #0056b3;
+      }
+      .register-container .debug-message {
+        color: #d10000;
+        background: #ffeaea;
+        border-radius: 6px;
+        padding: 10px;
+        margin-bottom: 10px;
+        font-size: 0.98em;
+      }
+      .register-container .se-connecter {
+        display: block;
+        text-align: center;
+        margin-top: 10px;
+        color: #007BFF;
+        text-decoration: none;
+        font-weight: 500;
+      }
+      .register-container .se-connecter:hover {
+        text-decoration: underline;
+      }
+      @media (max-width: 500px) {
+        .register-container {
+          padding: 15px 5px;
+          margin: 10px;
+        }
+      }
+    </style>
+    <div class="register-container">
+      <form method="POST">
+        {% csrf_token %}
+        <label for="username">Nom d'utilisateur :</label>
+        <input type="text" id="username" name="username" required placeholder="Nom d'utilisateur">
+        <label for="password">Mot de passe :</label>
+        <input type="password" id="password" name="password" required placeholder="Mot de passe">
+        <button type="submit">S'inscrire</button>
+      </form>
+      {% if debug_message %}
+        <div class="debug-message">{{ debug_message }}</div>
+      {% endif %}
+      <a class="se-connecter" href="{% url 'login' %}"><i class="fa fa-sign-in-alt"></i> Se connecter</a>
+    </div>
   </div>
 </body>
 </html>
