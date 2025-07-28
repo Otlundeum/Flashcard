@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import *
 from .form import CategorieForm, ArticleForm, VideoForm, QuizForm, QuizQuestionForm, QuizOptionForm
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.forms import modelformset_factory
 from django.http import JsonResponse, HttpResponse
@@ -186,19 +186,25 @@ def take_quiz(request, quiz_id):
     return render(request, 'take_quiz.html', {'quiz': quiz, 'questions': questions})
 
 def register(request):
+    debug_message = None
     if request.method == 'POST':
-        form = UserCreationForm(request.POST)
-        if form.is_valid():
-            user = form.save()
-            username = form.cleaned_data.get('username')
-            raw_password = form.cleaned_data.get('password1')
-            user = authenticate(username=username, password=raw_password)
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        if not username or not password:
+            debug_message = "Veuillez remplir tous les champs."
+        elif User.objects.filter(username=username).exists():
+            debug_message = "Ce nom d'utilisateur existe déjà. Choisissez-en un autre."
+        else:
+            user = User.objects.create_user(username=username, password=password)
+            user.save()
+            user = authenticate(username=username, password=password)
             if user is not None:
                 login(request, user)
-            return redirect('home')
-    else:
-        form = UserCreationForm()
-    return render(request, 'register.html', {'form': form})
+                return redirect('home')
+            else:
+                debug_message = "Utilisateur créé mais authentification impossible."
+        return render(request, 'register.html', {'debug_message': debug_message})
+    return render(request, 'register.html')
 
 @login_required
 def delete_article(request, id):
