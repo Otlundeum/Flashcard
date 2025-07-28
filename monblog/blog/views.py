@@ -31,7 +31,8 @@ def user_login(request):
 
 @login_required(login_url='login')
 def home(request):
-    return render(request, 'flashcards.html')
+    flashcards = Flashcard.objects.all()
+    return render(request, 'flashcards.html', {'flashcards': flashcards})
 
 def contact(request):
   return render(request, 'contact.html')
