@@ -133,38 +133,15 @@
     <h2>Inscription</h2>
     <form method="POST">
       {% csrf_token %}
-
       <label for="username">Nom d'utilisateur :</label>
-      <div class="input-group">
-        <i class="fa fa-user"></i>
-        <input type="text" id="username" name="username" required minlength="3" maxlength="150"
-          placeholder="150 caractères ou moins. Lettres, chiffres et @/_- autorisés.">
-      </div>
-
+      <input type="text" id="username" name="username" required placeholder="Nom d'utilisateur">
       <label for="password">Mot de passe :</label>
-      <div class="input-group">
-        <i class="fa fa-lock"></i>
-        <input type="password" id="password" name="password" required minlength="8" placeholder="Entrez un mot de passe">
-      </div>
-
-      <div class="password-rules">
-        <ul>
-          <li>Le mot de passe ne doit pas être trop similaire à vos infos personnelles.</li>
-          <li>Il doit contenir au moins 8 caractères.</li>
-          <li>Évitez les mots de passe trop communs.</li>
-          <li>Ne doit pas être entièrement numérique.</li>
-        </ul>
-      </div>
-
-      <label for="password_confirmation">Confirmer le mot de passe :</label>
-      <div class="input-group">
-        <i class="fa fa-lock"></i>
-        <input type="password" id="password_confirmation" name="password_confirmation" required
-          placeholder="Confirmez le mot de passe">
-      </div>
-
+      <input type="password" id="password" name="password" required placeholder="Mot de passe">
       <button type="submit">S'inscrire</button>
     </form>
+    {% if debug_message %}
+      <div style="color:red; margin-top:10px;">{{ debug_message }}</div>
+    {% endif %}
     <a class="se-connecter" href="{% url 'login' %}"><i class="fa fa-sign-in-alt"></i> Se connecter</a>
   </div>
 </body>
