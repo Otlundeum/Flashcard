@@ -22,14 +22,24 @@ def user_login(request):
         username = request.POST.get('username')
         password = request.POST.get('password')
         user = authenticate(request, username=username, password=password)
+        debug_message = None
+        from django.contrib.auth.models import User
+        try:
+            user_obj = User.objects.get(username=username)
+            if not user_obj.is_active:
+                debug_message = "Utilisateur trouvé mais inactif."
+            else:
+                debug_message = "Utilisateur trouvé et actif. Mot de passe incorrect ?"
+        except User.DoesNotExist:
+            debug_message = "Utilisateur non trouvé."
         if user is not None:
             login(request, user)
             return redirect('home')
         else:
-            # Affiche le nom d'utilisateur et un message d'erreur pour debug
             return render(request, 'login.html', {
                 'error': "Nom d'utilisateur ou mot de passe incorrect.",
-                'username': username
+                'username': username,
+                'debug_message': debug_message
             })
     return render(request, 'login.html')
 
