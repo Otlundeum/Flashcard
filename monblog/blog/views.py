@@ -11,7 +11,23 @@ import logging
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
+from django.contrib.auth import authenticate, login
+
 logger = logging.getLogger(__name__)
+
+
+# Vue de connexion personnalisée
+def user_login(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            login(request, user)
+            return redirect('home')  # Redirige vers la page d'accueil après connexion
+        else:
+            return render(request, 'login.html', {'error': "Nom d'utilisateur ou mot de passe incorrect."})
+    return render(request, 'login.html')
 
 @login_required(login_url='login')
 def home(request):
@@ -155,11 +171,20 @@ def take_quiz(request, quiz_id):
     return render(request, 'take_quiz.html', {'quiz': quiz, 'questions': questions})
 
 def register(request):
-    form = UserCreationForm(request.POST)
     if request.method == 'POST':
+        form = UserCreationForm(request.POST)
         if form.is_valid():
-            form.save()    
-            return render(request, 'register.html', {'form': form, 'success': True})
+            user = form.save()
+            # Connexion automatique après inscription
+            from django.contrib.auth import login, authenticate
+            username = form.cleaned_data.get('username')
+            raw_password = form.cleaned_data.get('password1')
+            user = authenticate(username=username, password=raw_password)
+            if user is not None:
+                login(request, user)
+                return redirect('home')  # Redirige vers la page flashcards
+            else:
+                return redirect('login')
     else:
         form = UserCreationForm()
     return render(request, 'register.html', {'form': form, 'success': True})

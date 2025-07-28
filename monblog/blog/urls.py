@@ -17,7 +17,7 @@ urlpatterns = [
     path('supprimer/<int:id>', views.supprimer, name='supprimer'),
     path('update/<int:id>', views.update, name='update'),
     path('register/', views.register, name='register'),
-    path('login/',auth_views.LoginView.as_view(template_name='login.html'),name='login'),
+    path('login/', views.user_login, name='login'),
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
     path('addvideo/', views.addvideo, name='addvideo'),
     path('createquiz/', views.createquiz, name='createquiz'),
